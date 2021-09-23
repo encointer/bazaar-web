@@ -63,7 +63,6 @@ function App() {
       // console.log("businessDataString:", businessDataString);
       console.log("businessData:", businessData);
       setBusinesses(oldArray => [...oldArray, businessData]);
-      onBusinessChange(businessData);
     }
 
     function uint8arrayToStringMethod(myUint8Arr: []){
