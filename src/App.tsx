@@ -4,32 +4,13 @@ import './App.css';
 
 import {ApiPromise, WsProvider} from '@polkadot/api';
 import {options} from "@encointer/node-api/options";
-// import IPFS from "ipfs-http-client";
-// import { Grid, Form, Dropdown } from 'semantic-ui-react';
 
-// const IPFS = require('ipfs-core');
-// const IPFSAPI = require('ipfs-http-client');
-
-// const all = require('it-all');
-// const { concat: uint8ArrayConcat } = require('uint8arrays/concat');
-
-interface BusinessData {
-  url: string;
-  oid: number;
-}
-
-interface Business {
-  name: string;
-  description: string;
-}
-
-// interface OfferingData {
-//   url: string;
-//   oid: number;
-// }
+import {BusinessData, Business} from "./Types";
+// import { Input } from 'semantic-ui-react';
 
 // businessCid1 = QmXGsZKHxMhaP8a2PCHPb4vtZJ1trLyChmQdu2oWCG9eDP;
 // businessCid2 = QmS7YPfCBfjqMux5AYd5VaYjHG8tEcvzShEBNpHtXT8t5y;
+// import CharacterDropDown from './Dropdown';
 
 function App() {
   const [businesses, setBusinesses] = useState<Business[]>([]);
@@ -53,21 +34,24 @@ function App() {
     // let stream = client.cat('QmXGsZKHxMhaP8a2PCHPb4vtZJ1trLyChmQdu2oWCG9eDP');
 
     async function getChunks(stream: []) {
-      let ar: any = [];
+      let data: number[] = [];
       for await (let chunk of stream) {
         // console.log(uint8arrayToStringMethod(chunk));
-        ar.push(chunk)
+        data.push.apply(data,chunk);
       }
-      let businessDataString = uint8arrayToStringMethod(ar[0]);
+
+      let businessDataString = uint8arrayToString(data);
       let businessData: Business = JSON.parse(businessDataString);
       // console.log("businessDataString:", businessDataString);
-      console.log("businessData:", businessData);
+      // console.log("data:", data);
+      // console.log("businessData:", businessData);
       setBusinesses(oldArray => [...oldArray, businessData]);
     }
 
-    function uint8arrayToStringMethod(myUint8Arr: []){
-      return String.fromCharCode.apply(null, myUint8Arr);
-    }
+  }
+
+  function uint8arrayToString(myUint8Arr: number[]){
+    return String.fromCharCode.apply(null, myUint8Arr);
   }
 
   const connect = async () => {
@@ -95,6 +79,11 @@ function App() {
 
 
   useEffect(() => {
+    // async function getCommunities() {
+    //   const communitiesArray = await api.rpc.communities.getAll();
+    //   // setCommunities((oldArray => [...oldArray, communitiesArray]));
+    // }
+    getCommunities();
     console.log("state of communities is: ", communities);
   }, [communities]);
 
@@ -103,16 +92,16 @@ function App() {
   }, [businesses]);
 
 
-  const getBusinesses = async () => {
+  const getBusinessesFromIpfsCid = async () => {
     if(await connect()) {
 
       const communitiesArray = await api.rpc.communities.getAll();
+      // setCommunities((oldArray => [...oldArray, communitiesArray]));
       onCommunityChange(communitiesArray);
 
       //here we later wont take it like that but pass the actual wanted community
-      const businessesList = await api.rpc.bazaar.getBusinesses(communitiesArray[0]['cid'].toString());
-      // onBusinessChange(businessesList);
-
+      const businessesList = await api.rpc.bazaar.getBusinesses(communitiesArray[1]['cid'].toString());
+      console.log("businesses from rpc call:", businessesList);
       let businessUrls: string[];
 
       // let exampleJsons: any[] = [];
@@ -125,9 +114,9 @@ function App() {
 
   useEffect(() => {
     let unsubscribeAll: any = null;
-    getBusinesses().then(buisness_cids => {
-      if(buisness_cids) {
-        catBusinessInfoFromInfura(buisness_cids);
+    getBusinessesFromIpfsCid().then(business_cids => {
+      if(business_cids) {
+        catBusinessInfoFromInfura(business_cids);
       }
     })
       .then(unsub => {
@@ -138,6 +127,14 @@ function App() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  let communityList = communities.length > 0
+      && communities.map((item, i) => {
+        console.log(item);
+        return (
+            <option key={i} value={item}> {item['name']}</option>
+        )
+      });
+
   return (
     <div className="App">
       <h1>Businesses</h1>
@@ -145,30 +142,31 @@ function App() {
         {/*<DropDown>*/}
 
         {/*</DropDown>*/}
+      {/*<CharacterDropDown>*/}
+
+      {/*</CharacterDropDown>*/}
+
+      <div>
+
+        <select>
+          {communityList}
+        </select>
+      </div>
+      {/*<Input type="select" onChange={onDropdownSelected} multiple>*/}
+      {/*  {businesses}*/}
+      {/*</Input>*/}
       {/*</Form>*/}
         {businesses ? (
         <div>
           {
-            // businesses.map((business) => ( Object.entries(business).map((value,key) => (
-            //   <span>
-            //   {/*<p>*/}
-            //   {/*  {key}*/}
-            //   {/*</p>*/}
-            //   <p>
-            //     {value}
-            //   </p>
-            //   </span>
-            // ))))
-
-            businesses.map((business) => (
-                <span>
-                  <p key="{name}">rung
+            businesses.map((business, i) => (
+                <ul>
+                  <li key={i}>
                     Name: {business.name}
-                  </p>
-                  <p key="{description}">
+                    <br> </br>
                     Description: {business.description}
-                  </p>
-                </span>
+                  </li>
+                </ul>
             ))
           }
         </div>
