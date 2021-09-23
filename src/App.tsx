@@ -4,28 +4,72 @@ import './App.css';
 
 import {ApiPromise, WsProvider} from '@polkadot/api';
 import {options} from "@encointer/node-api/options";
+// import IPFS from "ipfs-http-client";
+// import { Grid, Form, Dropdown } from 'semantic-ui-react';
 
-const IPFS = require('ipfs-core');
+// const IPFS = require('ipfs-core');
+// const IPFSAPI = require('ipfs-http-client');
+
+// const all = require('it-all');
+// const { concat: uint8ArrayConcat } = require('uint8arrays/concat');
 
 interface BusinessData {
   url: string;
   oid: number;
 }
 
-// interface Business {
-//   name: string;
-//   description: string;
-// }
+interface Business {
+  name: string;
+  description: string;
+}
 
 // interface OfferingData {
 //   url: string;
 //   oid: number;
 // }
 
+// businessCid1 = QmXGsZKHxMhaP8a2PCHPb4vtZJ1trLyChmQdu2oWCG9eDP;
+// businessCid2 = QmS7YPfCBfjqMux5AYd5VaYjHG8tEcvzShEBNpHtXT8t5y;
+
 function App() {
-  const [businesses, setBusinesses] = useState<BusinessData[]>();
-  // const [communities, setCommunities] = useState();
+  const [businesses, setBusinesses] = useState<Business[]>([]);
+  const [communities, setCommunities] = useState([]);
   let api: any;
+
+  const catBusinessInfoFromInfura = async (businessCids: string[]) => {
+    const ipfsClient = require('ipfs-http-client')
+    const client = ipfsClient.create({
+      host: 'ipfs.infura.io',
+      port: 5001,
+      protocol: 'https',
+      headers: {
+      }
+    })
+
+    businessCids.forEach((cid: string) => {
+      let stream = client.cat(cid);
+      getChunks(stream);
+    });
+    // let stream = client.cat('QmXGsZKHxMhaP8a2PCHPb4vtZJ1trLyChmQdu2oWCG9eDP');
+
+    async function getChunks(stream: []) {
+      let ar: any = [];
+      for await (let chunk of stream) {
+        // console.log(uint8arrayToStringMethod(chunk));
+        ar.push(chunk)
+      }
+      let businessDataString = uint8arrayToStringMethod(ar[0]);
+      let businessData: Business = JSON.parse(businessDataString);
+      // console.log("businessDataString:", businessDataString);
+      console.log("businessData:", businessData);
+      setBusinesses(oldArray => [...oldArray, businessData]);
+      onBusinessChange(businessData);
+    }
+
+    function uint8arrayToStringMethod(myUint8Arr: []){
+      return String.fromCharCode.apply(null, myUint8Arr);
+    }
+  }
 
   const connect = async () => {
     // let api: ApiPromise;
@@ -44,42 +88,49 @@ function App() {
       await provider.disconnect();
     }
   }
-
   connect();
+
+  const onCommunityChange = (communities: []) => {
+    setCommunities(communities);
+  }
+
+
+  useEffect(() => {
+    console.log("state of communities is: ", communities);
+  }, [communities]);
+
+  useEffect(() => {
+    console.log("state of businesses is: ", businesses);
+  }, [businesses]);
+
 
   const getBusinesses = async () => {
     if(await connect()) {
-      // const communities = await api.rpc.communities.getAll();
-      // console.log("communities get all returns type:", typeof result);
-      // console.log(communities);
-      // const bid = api.createType('BusinessIdentifier', {});
-      const businesses = await api.rpc.bazaar.getBusinesses("0xa7c3c66819ea4962f65b0a9525017e43adc662096482313f31dd08eb0a7aa53f");
-      // console.log("businesses get all returns type:", typeof businesses);
-      setBusinesses(businesses);
-      // setCommunities(communities);
-      // Object.keys(businesses).map((key, i) => (
-      console.log("businesses: --- ", businesses);
-      
-      const ipfs = await IPFS.create();
 
-      let businessUrls: string[] = [];
-      
-      //TO-DO: I get an array of Maps with key url and key oid. for now, i take every element, and push the url to a list
+      const communitiesArray = await api.rpc.communities.getAll();
+      onCommunityChange(communitiesArray);
 
-      // console.log("businesses[0]['url']: --- ", businesses[0]['url']);
-      let exampleJsons = [];
-      if(businesses.length > 0) {
-        businessUrls = businesses.map((e: BusinessData) => e['url']);
-        businessUrls.forEach(e => 
-          exampleJsons.push(ipfs.get(e)));
-        // jsonExample =  ipfs.get(busi)
+      //here we later wont take it like that but pass the actual wanted community
+      const businessesList = await api.rpc.bazaar.getBusinesses(communitiesArray[0]['cid'].toString());
+      // onBusinessChange(businessesList);
+
+      let businessUrls: string[];
+
+      // let exampleJsons: any[] = [];
+      if(businessesList.length > 0) {
+        businessUrls = businessesList.map((e: BusinessData) => e['url'].toString());
+        return businessUrls;
       }
-      // console.log("type of businesses:",typeof businesses);
   }
 }
+
   useEffect(() => {
     let unsubscribeAll: any = null;
-    getBusinesses()
+    getBusinesses().then(buisness_cids => {
+      if(buisness_cids) {
+        catBusinessInfoFromInfura(buisness_cids);
+      }
+    })
       .then(unsub => {
         unsubscribeAll = unsub;
       })
@@ -91,24 +142,36 @@ function App() {
   return (
     <div className="App">
       <h1>Businesses</h1>
-        
-        {businesses ? ( 
+      {/*<Form>*/}
+        {/*<DropDown>*/}
+
+        {/*</DropDown>*/}
+      {/*</Form>*/}
+        {businesses ? (
         <div>
-          {/* {businesses} */}
-          {/* {businesses[1]['url']} */}
           {
             // businesses.map((business) => ( Object.entries(business).map((value,key) => (
             //   <span>
-            //   <p> 
-            //     {key}
-            //   </p>
+            //   {/*<p>*/}
+            //   {/*  {key}*/}
+            //   {/*</p>*/}
             //   <p>
             //     {value}
             //   </p>
             //   </span>
             // ))))
-          }
 
+            businesses.map((business) => (
+                <span>
+                  <p key="{name}">rung
+                    Name: {business.name}
+                  </p>
+                  <p key="{description}">
+                    Description: {business.description}
+                  </p>
+                </span>
+            ))
+          }
         </div>
         )
         : 
