@@ -16,9 +16,8 @@ function App() {
     }
 
     const [businesses, setBusinesses] = useState<Business[]>([]);
-    // eslint-disable-next-line
     const [communities, setCommunities] = useState([]);
-    const [chosenCommunity, setChosenCommunity] = useState('');
+    const [chosenCommunity, setChosenCommunity] = useState();
     let api: any;
 
     const connect = async () => {
@@ -75,11 +74,6 @@ function App() {
     }
 
     useEffect(() => {
-        // async function getCommunities() {
-        //   const communitiesArray = await api.rpc.communities.getAll();
-        //   // setCommunities((oldArray => [...oldArray, communitiesArray]));
-        // }
-        // getCommunities();
         console.log("state of communities is: ", communities);
     }, [communities]);
 
@@ -91,8 +85,6 @@ function App() {
         if(await connect()) {
             try {
                 const communitiesArray = await api.rpc.communities.getAll();
-                // setCommunities([oldArray, communitiesArray]);
-                // setCommunities(oldArray => [...oldArray, communitiesArray]);
                 onCommunityChange(communitiesArray);
             }
             catch(e: any) {
@@ -110,13 +102,13 @@ function App() {
             //here we later wont take it like that but pass the actual wanted community
             const businessesList = await api.rpc.bazaar.getBusinesses(cid);
             console.log("businesses from rpc call:", businessesList);
-            let businessUrls: string[];
+            let businessUrls: string[] = [];
 
-            // let exampleJsons: any[] = [];
             if(businessesList.length > 0) {
                 businessUrls = businessesList.map((e: BusinessData) => e['url'].toString());
-                return businessUrls;
             }
+
+            return businessUrls;
         }
     }
 
@@ -124,24 +116,25 @@ function App() {
         getAllCommunities();
         // eslint-disable-next-line
     }, [])
-    useEffect(() => {
-        let unsubscribeAll: any = null;
-        getBusinessesFromIpfsCid(chosenCommunity).then(business_cids => {
-            if(business_cids) {
-                catBusinessInfoFromInfura(business_cids);
-            }
-        })
-            .then(unsub => {
-                unsubscribeAll = unsub;
-            })
-            .catch(console.error);
-        return () => unsubscribeAll && unsubscribeAll();
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
+
+    // useEffect(() => {
+    //     let unsubscribeAll: any = null;
+    //     getBusinessesFromIpfsCid(chosenCommunity).then(business_cids => {
+    //         if(business_cids) {
+    //             catBusinessInfoFromInfura(business_cids);
+    //         }
+    //     })
+    //         .then(unsub => {
+    //             unsubscribeAll = unsub;
+    //         })
+    //         .catch(console.error);
+    //     return () => unsubscribeAll && unsubscribeAll();
+    //     // eslint-disable-next-line react-hooks/exhaustive-deps
+    // }, []);
 
     let communityList = communities.length > 0
         && communities.map((community, i) => {
-            console.log("a community from communities_state:", community);
+            // console.log("a community from communities_state:", community);
             return (
                 <option key={i} value={community}> {community['name']}</option>
             )
@@ -150,6 +143,7 @@ function App() {
     function handleChange (e: any) {
         console.log("the target is:", e.target.value);
         let targetCommunity = JSON.parse(e.target.value);
+        console.log("targetCommunity", targetCommunity['name']);
         setChosenCommunity((targetCommunity) => targetCommunity);
         setBusinesses(() => []);
 
@@ -166,9 +160,12 @@ function App() {
             <h1>Businesses Per Community</h1>
             {communities ? (
             <div>
-                <select value={chosenCommunity}
+                <select
+                    // defaultValue={communities[0]}
+                    value={chosenCommunity}
                         onChange={handleChange}
                 >
+                    <option disabled selected> -- choose a community -- </option>
                     {communityList}
                 </select>
             </div>)
