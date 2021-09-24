@@ -95,20 +95,18 @@ function App() {
 
     const getBusinessesFromIpfsCid = async (cid: string) => {
         if(await connect()) {
-            // const communitiesArray = await api.rpc.communities.getAll();
-            // setCommunities((oldArray => [...oldArray, communitiesArray]));
-            // onCommunityChange(communitiesArray);
-
-            //here we later wont take it like that but pass the actual wanted community
-            const businessesList = await api.rpc.bazaar.getBusinesses(cid);
-            console.log("businesses from rpc call:", businessesList);
-            let businessUrls: string[] = [];
-
-            if(businessesList.length > 0) {
-                businessUrls = businessesList.map((e: BusinessData) => e['url'].toString());
+            try{
+                const businessesList = await api.rpc.bazaar.getBusinesses(cid);
+                console.log("businesses from rpc call:", businessesList);
+                let businessUrls: string[] = [];
+                if(businessesList.length > 0) {
+                    businessUrls = businessesList.map((e: BusinessData) => e['url'].toString());
+                }
+                return businessUrls;
             }
-
-            return businessUrls;
+            catch(e){
+                console.log(e);
+            }
         }
     }
 
@@ -148,9 +146,14 @@ function App() {
         setBusinesses(() => []);
 
         getBusinessesFromIpfsCid(targetCommunity['cid']).then((business_cids) => {
-                if(business_cids) {
+            let unsubscribeAll: any = null;
+            if(business_cids) {
                     console.log("business_cids_:", business_cids);
-                    catBusinessInfoFromInfura(business_cids);
+                    catBusinessInfoFromInfura(business_cids).then(unsub => {
+                                unsubscribeAll = unsub;
+                            })
+                            .catch(console.error);
+                        return () => unsubscribeAll && unsubscribeAll();
                 }
             })
     }
@@ -179,8 +182,7 @@ function App() {
                                 <ul>
                                     <li key={i}>
                                         Name: {business.name}
-                                        {/*<br> </br>*/}
-                                        Description: {business.description}
+                                        <p> Description: {business.description} </p>
                                     </li>
                                 </ul>
                             ))
