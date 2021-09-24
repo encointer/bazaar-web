@@ -6,17 +6,39 @@ import {ApiPromise, WsProvider} from '@polkadot/api';
 import {options} from "@encointer/node-api/options";
 
 import {BusinessData, Business} from "./Types";
-// import { Input } from 'semantic-ui-react';
 
 // businessCid1 = QmXGsZKHxMhaP8a2PCHPb4vtZJ1trLyChmQdu2oWCG9eDP;
 // businessCid2 = QmS7YPfCBfjqMux5AYd5VaYjHG8tEcvzShEBNpHtXT8t5y;
-// import CharacterDropDown from './Dropdown';
 
 function App() {
+    function uint8arrayToString(myUint8Arr: number[]){
+        return String.fromCharCode.apply(null, myUint8Arr);
+    }
+
     const [businesses, setBusinesses] = useState<Business[]>([]);
+    // eslint-disable-next-line
     const [communities, setCommunities] = useState([]);
-    const [chosenCommunity, setChosenCommunity] = useState();
+    const [chosenCommunity, setChosenCommunity] = useState('');
     let api: any;
+
+    const connect = async () => {
+        // let api: ApiPromise;
+        const chain = 'ws://127.0.0.1:9944';
+        const provider = new WsProvider('ws://127.0.0.1:9944');
+        try {
+            api = await ApiPromise.create({
+                ...options(),
+                provider: provider
+            });
+            console.log(`${chain} wss connected success`);
+            return true;
+        }
+        catch (err) {
+            console.log(`connect ${chain} failed`);
+            await provider.disconnect();
+        }
+    }
+    connect();
 
     const catBusinessInfoFromInfura = async (businessCids: string[]) => {
         const ipfsClient = require('ipfs-http-client')
@@ -48,33 +70,9 @@ function App() {
 
     }
 
-    function uint8arrayToString(myUint8Arr: number[]){
-        return String.fromCharCode.apply(null, myUint8Arr);
-    }
-
-    const connect = async () => {
-        // let api: ApiPromise;
-        const chain = 'ws://127.0.0.1:9944';
-        const provider = new WsProvider('ws://127.0.0.1:9944');
-        try {
-            api = await ApiPromise.create({
-                ...options(),
-                provider: provider
-            });
-            console.log(`${chain} wss connected success`);
-            return true;
-        }
-        catch (err) {
-            console.log(`connect ${chain} failed`);
-            await provider.disconnect();
-        }
-    }
-    connect();
-
     const onCommunityChange = (communities: []) => {
         setCommunities(communities);
     }
-
 
     useEffect(() => {
         // async function getCommunities() {
@@ -89,16 +87,28 @@ function App() {
         console.log("state of businesses is: ", businesses);
     }, [businesses]);
 
-
-    const getBusinessesFromIpfsCid = async () => {
+    const getAllCommunities = async () => {
         if(await connect()) {
+            try {
+                const communitiesArray = await api.rpc.communities.getAll();
+                // setCommunities([oldArray, communitiesArray]);
+                // setCommunities(oldArray => [...oldArray, communitiesArray]);
+                onCommunityChange(communitiesArray);
+            }
+            catch(e: any) {
+                console.log(e);
+            }
+        }
+    }
 
-            const communitiesArray = await api.rpc.communities.getAll();
+    const getBusinessesFromIpfsCid = async (cid: string) => {
+        if(await connect()) {
+            // const communitiesArray = await api.rpc.communities.getAll();
             // setCommunities((oldArray => [...oldArray, communitiesArray]));
-            onCommunityChange(communitiesArray);
+            // onCommunityChange(communitiesArray);
 
             //here we later wont take it like that but pass the actual wanted community
-            const businessesList = await api.rpc.bazaar.getBusinesses(communitiesArray[1]['cid'].toString());
+            const businessesList = await api.rpc.bazaar.getBusinesses(cid);
             console.log("businesses from rpc call:", businessesList);
             let businessUrls: string[];
 
@@ -110,9 +120,13 @@ function App() {
         }
     }
 
+    useEffect(()=> {
+        getAllCommunities();
+        // eslint-disable-next-line
+    }, [])
     useEffect(() => {
         let unsubscribeAll: any = null;
-        getBusinessesFromIpfsCid().then(business_cids => {
+        getBusinessesFromIpfsCid(chosenCommunity).then(business_cids => {
             if(business_cids) {
                 catBusinessInfoFromInfura(business_cids);
             }
@@ -135,19 +149,32 @@ function App() {
 
     function handleChange (e: any) {
         console.log("the target is:", e.target.value);
-        setChosenCommunity(e.target.value);
+        let targetCommunity = JSON.parse(e.target.value);
+        setChosenCommunity((targetCommunity) => targetCommunity);
+        setBusinesses(() => []);
+
+        getBusinessesFromIpfsCid(targetCommunity['cid']).then((business_cids) => {
+                if(business_cids) {
+                    console.log("business_cids_:", business_cids);
+                    catBusinessInfoFromInfura(business_cids);
+                }
+            })
     }
+
     return (
         <div className="App">
             <h1>Businesses Per Community</h1>
+            {communities ? (
             <div>
                 <select value={chosenCommunity}
                         onChange={handleChange}
                 >
                     {communityList}
                 </select>
-            </div>
-
+            </div>)
+                :
+                (<div> </div>)
+            }
             {businesses ? (
                     <div>
                         {
