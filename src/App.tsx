@@ -5,16 +5,10 @@ import {ApiPromise, WsProvider} from '@polkadot/api';
 import {options} from "@encointer/node-api/options";
 import {Business, BusinessData, Community, Offering, OfferingData} from "./Types";
 import {getChunks, uint8arrayToString} from './helpers';
-const ipfsClient = require('ipfs-http-client')
+import {getInfuraClient} from "./settings";
 
 function App() {
-    const client = ipfsClient.create({
-        host: 'ipfs.infura.io',
-        port: 5001,
-        protocol: 'https',
-        headers: {
-        }
-    })
+    const client = getInfuraClient();
 
     const [businesses, setBusinesses] = useState<Business[]>([]);
     const [offerings, setOfferings] = useState<Offering[]>([]);
