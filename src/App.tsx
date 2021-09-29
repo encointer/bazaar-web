@@ -41,24 +41,6 @@ function App() {
     }
     connect();
 
-    // const catBusinessInfoFromInfura = async (businessCids: string[]) => {
-    //     const ipfsClient = require('ipfs-http-client')
-    //     const client = ipfsClient.create({
-    //         host: 'ipfs.infura.io',
-    //         port: 5001,
-    //         protocol: 'https',
-    //         headers: {
-    //         }
-    //     })
-    //
-    //     businessCids.forEach((cid: string) => {
-    //         let stream = client.cat(cid);
-    //         getChunks(stream);
-    //     });
-    //     // let stream = client.cat('QmXGsZKHxMhaP8a2PCHPb4vtZJ1trLyChmQdu2oWCG9eDP');
-    //
-    // }
-
     const setBusinessesFromCids = async (cids: string[]) => {
         const client = ipfsClient.create({
             host: 'ipfs.infura.io',
@@ -68,13 +50,15 @@ function App() {
             }
         })
         let data: number[] = [];
+        let businesses: Business[] = [];
         for (const cid of cids) {
             let stream = client.cat(cid);
             data = await getChunks(stream);
             let dataAsString = uint8arrayToString(data);
-            let businessData: Business = JSON.parse(dataAsString);
-            setBusinesses(oldArray => [...oldArray, businessData]);
+            let business: Business = JSON.parse(dataAsString);
+            businesses.push(business);
         }
+        setBusinesses(oldArray => ([...oldArray, ...businesses]));
     }
 
     const setOfferingsFromCids = async (cids: string[]) => {
@@ -86,13 +70,16 @@ function App() {
             }
         })
         let data: number[] = [];
+        let offerings: Offering[] = [];
         for (const cid of cids) {
             let stream = client.cat(cid);
             data = await getChunks(stream);
             let dataAsString = uint8arrayToString(data);
-            let offeringData: Offering = JSON.parse(dataAsString);
-            setOfferings(oldArray => [...oldArray, offeringData]);
+            let offering: Offering = JSON.parse(dataAsString);
+            offerings.push(offering)
         }
+        setOfferings(oldArray => [...oldArray, ...offerings]);
+
     }
 
     async function getChunks(stream: []) {
@@ -112,9 +99,9 @@ function App() {
     //     console.log("state of communities is: ", communities);
     // }, [communities]);
     //
-    // useEffect(() => {
-    //     console.log("state of businesses is: ", businesses);
-    // }, [businesses]);
+    useEffect(() => {
+        console.log("state of businesses is: ", businesses);
+    }, [businesses]);
 
     const getAllCommunities = async () => {
         if(await connect()) {
@@ -132,7 +119,7 @@ function App() {
         if(await connect()) {
             try{
                 const businessesList = await api.rpc.bazaar.getBusinesses(cid);
-                console.log("businesses from rpc call:", businessesList);
+                // console.log("businesses from rpc call:", businessesList);
                 let businessUrls: string[] = [];
                 if(businessesList.length > 0) {
                     businessUrls = businessesList.map((e: BusinessData) => e['url'].toString());
@@ -178,11 +165,12 @@ function App() {
         });
 
     function handleChange (e: any) {
-        console.log("the target is:", e.target.value);
+        // console.log("the target is:", e.target.value);
         let targetCommunity = JSON.parse(e.target.value);
         console.log("targetCommunity", targetCommunity['name']);
         setChosenCommunity((targetCommunity) => targetCommunity);
         setBusinesses(() => []);
+        setOfferings(() => []);
 
         getBusinessesCids(targetCommunity['cid']).then((business_cids) => {
             let unsubscribeAll: any = null;
@@ -214,11 +202,11 @@ function App() {
             {communities ? (
                     <div>
                         <select
-                            // defaultValue={communities[0]}
+                            defaultValue="choose a community"
                             value={chosenCommunity}
                             onChange={handleChange}
                         >
-                            <option disabled selected> -- choose a community -- </option>
+                            <option disabled>choose a community</option>
                             {communityList}
                         </select>
                     </div>)
