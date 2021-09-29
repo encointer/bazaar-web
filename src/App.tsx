@@ -1,25 +1,25 @@
-import React, { useEffect, useState } from 'react';
+import React, {useEffect, useState} from 'react';
 // import logo from './logo.svg';
 import './App.css';
-
 import {ApiPromise, WsProvider} from '@polkadot/api';
 import {options} from "@encointer/node-api/options";
-
-import {BusinessData, Business, Offering, OfferingData} from "./Types";
-
-import uint8arrayToString from './helpers';
-
+import {Business, BusinessData, Offering, OfferingData} from "./Types";
+import {getChunks, uint8arrayToString} from './helpers';
 const ipfsClient = require('ipfs-http-client')
-// businessCid1 = QmXGsZKHxMhaP8a2PCHPb4vtZJ1trLyChmQdu2oWCG9eDP;
-// businessCid2 = QmS7YPfCBfjqMux5AYd5VaYjHG8tEcvzShEBNpHtXT8t5y;
 
 function App() {
+    const client = ipfsClient.create({
+        host: 'ipfs.infura.io',
+        port: 5001,
+        protocol: 'https',
+        headers: {
+        }
+    })
 
     const [businesses, setBusinesses] = useState<Business[]>([]);
     const [offerings, setOfferings] = useState<Offering[]>([]);
     const [communities, setCommunities] = useState([]);
     const [chosenCommunity, setChosenCommunity] = useState();
-    // const [chosenBusiness, setChosenBusiness] = useState();
     let api: any;
 
     const connect = async () => {
@@ -42,13 +42,7 @@ function App() {
     connect();
 
     const setBusinessesFromCids = async (cids: string[]) => {
-        const client = ipfsClient.create({
-            host: 'ipfs.infura.io',
-            port: 5001,
-            protocol: 'https',
-            headers: {
-            }
-        })
+
         let data: number[] = [];
         let businesses: Business[] = [];
         for (const cid of cids) {
@@ -62,13 +56,6 @@ function App() {
     }
 
     const setOfferingsFromCids = async (cids: string[]) => {
-        const client = ipfsClient.create({
-            host: 'ipfs.infura.io',
-            port: 5001,
-            protocol: 'https',
-            headers: {
-            }
-        })
         let data: number[] = [];
         let offerings: Offering[] = [];
         for (const cid of cids) {
@@ -80,15 +67,6 @@ function App() {
         }
         setOfferings(oldArray => [...oldArray, ...offerings]);
 
-    }
-
-    async function getChunks(stream: []) {
-        let data: number[] = [];
-        for await (let chunk of stream) {
-            // console.log(uint8arrayToStringMethod(chunk));
-            data.push.apply(data,chunk);
-        }
-        return data;
     }
 
     const onCommunityChange = (communities: []) => {
