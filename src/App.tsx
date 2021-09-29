@@ -3,7 +3,7 @@ import React, {useEffect, useState} from 'react';
 import './App.css';
 import {ApiPromise, WsProvider} from '@polkadot/api';
 import {options} from "@encointer/node-api/options";
-import {Business, BusinessData, Offering, OfferingData} from "./Types";
+import {Business, BusinessData, Community, Offering, OfferingData} from "./Types";
 import {getChunks, uint8arrayToString} from './helpers';
 const ipfsClient = require('ipfs-http-client')
 
@@ -18,7 +18,7 @@ function App() {
 
     const [businesses, setBusinesses] = useState<Business[]>([]);
     const [offerings, setOfferings] = useState<Offering[]>([]);
-    const [communities, setCommunities] = useState([]);
+    const [communities, setCommunities] = useState<Community[]>([]);
     const [chosenCommunity, setChosenCommunity] = useState();
     let api: any;
 
@@ -40,58 +40,6 @@ function App() {
         }
     }
     connect();
-
-    const setBusinessesFromCids = async (cids: string[]) => {
-
-        let data: number[] = [];
-        let businesses: Business[] = [];
-        for (const cid of cids) {
-            let stream = client.cat(cid);
-            data = await getChunks(stream);
-            let dataAsString = uint8arrayToString(data);
-            let business: Business = JSON.parse(dataAsString);
-            businesses.push(business);
-        }
-        setBusinesses(oldArray => ([...oldArray, ...businesses]));
-    }
-
-    const setOfferingsFromCids = async (cids: string[]) => {
-        let data: number[] = [];
-        let offerings: Offering[] = [];
-        for (const cid of cids) {
-            let stream = client.cat(cid);
-            data = await getChunks(stream);
-            let dataAsString = uint8arrayToString(data);
-            let offering: Offering = JSON.parse(dataAsString);
-            offerings.push(offering)
-        }
-        setOfferings(oldArray => [...oldArray, ...offerings]);
-
-    }
-
-    const onCommunityChange = (communities: []) => {
-        setCommunities(communities);
-    }
-
-    // useEffect(() => {
-    //     console.log("state of communities is: ", communities);
-    // }, [communities]);
-    //
-    useEffect(() => {
-        console.log("state of businesses is: ", businesses);
-    }, [businesses]);
-
-    const getAllCommunities = async () => {
-        if(await connect()) {
-            try {
-                const communitiesArray = await api.rpc.communities.getAll();
-                onCommunityChange(communitiesArray);
-            }
-            catch(e: any) {
-                console.log(e);
-            }
-        }
-    }
 
     const getBusinessesCids = async (cid: string) => {
         if(await connect()) {
@@ -129,6 +77,56 @@ function App() {
         }
     }
 
+    const setBusinessesFromCids = async (cids: string[]) => {
+
+        let data: number[] = [];
+        let businesses: Business[] = [];
+        for (const cid of cids) {
+            let stream = client.cat(cid);
+            data = await getChunks(stream);
+            let dataAsString = uint8arrayToString(data);
+            let business: Business = JSON.parse(dataAsString);
+            businesses.push(business);
+        }
+        setBusinesses(oldArray => ([...oldArray, ...businesses]));
+    }
+
+    const setOfferingsFromCids = async (cids: string[]) => {
+        let data: number[] = [];
+        let offerings: Offering[] = [];
+        for (const cid of cids) {
+            let stream = client.cat(cid);
+            data = await getChunks(stream);
+            let dataAsString = uint8arrayToString(data);
+            let offering: Offering = JSON.parse(dataAsString);
+            offerings.push(offering)
+        }
+        setOfferings(oldArray => [...oldArray, ...offerings]);
+
+    }
+
+
+    // useEffect(() => {
+    //     console.log("state of communities is: ", communities);
+    // }, [communities]);
+    //
+    // useEffect(() => {
+    //     console.log("state of businesses is: ", businesses);
+    // }, [businesses]);
+
+    const getAllCommunities = async () => {
+        if(await connect()) {
+            try {
+                const communitiesArray: Community[] = await api.rpc.communities.getAll();
+                setCommunities((oldArray: Community[]) => ([...oldArray, ...communitiesArray]));
+                // onCommunityChange(communitiesArray);
+            }
+            catch(e: any) {
+                console.log(e);
+            }
+        }
+    }
+
     useEffect(()=> {
         getAllCommunities();
         // eslint-disable-next-line
@@ -138,7 +136,7 @@ function App() {
         && communities.map((community, i) => {
             // console.log("a community from communities_state:", community);
             return (
-                <option key={i} value={community}> {community['name']}</option>
+                <option key={i} value={community.toString()}> {community['name']}</option>
             )
         });
 
