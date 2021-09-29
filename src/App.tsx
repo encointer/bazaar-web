@@ -6,6 +6,8 @@ import {options} from "@encointer/node-api/options";
 import {Business, BusinessData, Community, Offering, OfferingData} from "./Types";
 import {getChunks, uint8arrayToString} from './helpers';
 import {getInfuraClient} from "./settings";
+import {BusinessComponent} from "./BusinessComponent";
+import {OfferingComponent} from "./OfferingComponent";
 
 function App() {
     const client = getInfuraClient();
@@ -113,7 +115,6 @@ function App() {
             try {
                 const communitiesArray: Community[] = await api.rpc.communities.getAll();
                 setCommunities((oldArray: Community[]) => ([...oldArray, ...communitiesArray]));
-                // onCommunityChange(communitiesArray);
             }
             catch(e: any) {
                 console.log(e);
@@ -187,20 +188,17 @@ function App() {
                     <div>
                         <h2>Businesses</h2>
                         {
-                            businesses.map((business, i) => (
-                                <ul>
-                                    <li key={i}>
-                                        Name: {business.name}
-                                        <p> Description: {business.description} </p>
-                                    </li>
-                                </ul>
-                            ))
+                            businesses.map(
+                                (business, i) => (
+                                <BusinessComponent key={i} business={business}/>
+                                )
+                            )
                         }
                     </div>
                 )
                 :
                 (
-                    <div>businesses empty</div>
+                    <div>no businesses</div>
                 )
             }
             {offerings ? (
@@ -208,19 +206,13 @@ function App() {
                         <h2>Offerings</h2>
                         {
                             offerings.map((offering, i) => (
-                                <ul>
-                                    <li key={i}>
-                                        <p> name: {offering.name} </p>
-                                        <p> price: {offering.price} </p>
-                                        <p> community: {offering.community} </p>
-                                    </li>
-                                </ul>
+                                <OfferingComponent key={i} offering={offering}/>
                             ))
                         }
                     </div>
             ) :
                 (
-                    <div> </div>
+                    <div>no offerings</div>
                 )
 
             }
