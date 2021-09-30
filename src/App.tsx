@@ -8,6 +8,7 @@ import {getChunks, uint8arrayToString} from './helpers';
 import {getInfuraClient} from "./settings";
 import {BusinessComponent} from "./BusinessComponent";
 import {OfferingComponent} from "./OfferingComponent";
+// import {Simulate} from "react-dom/test-utils";
 
 function App() {
     const client = getInfuraClient();
@@ -41,6 +42,8 @@ function App() {
         if(await connect()) {
             try{
                 const businessesList = await api.rpc.bazaar.getBusinesses(cid);
+                const rpcMethods = await api.rpc.rpc.methods();
+                console.log("methods: ", rpcMethods);
                 // console.log("businesses from rpc call:", businessesList);
                 let businessUrls: string[] = [];
                 if(businessesList.length > 0) {
@@ -84,6 +87,7 @@ function App() {
             let business: Business = JSON.parse(dataAsString);
             businesses.push(business);
         }
+        businesses = await getImageFromIpfsConvertToBase64AndSetProperty(client, businesses);
         setBusinesses(oldArray => ([...oldArray, ...businesses]));
     }
 
@@ -97,10 +101,22 @@ function App() {
             let offering: Offering = JSON.parse(dataAsString);
             offerings.push(offering)
         }
+        offerings = await getImageFromIpfsConvertToBase64AndSetProperty(client, offerings);
         setOfferings(oldArray => [...oldArray, ...offerings]);
 
     }
 
+    const getImageFromIpfsConvertToBase64AndSetProperty = async (client: any, businessesOrOfferings: any[]) => {
+        let data: number[] = [];
+        for (const element of businessesOrOfferings) {
+            let image_cid = element['image_cid'];
+            let stream = client.cat(image_cid);
+            data = await getChunks(stream);
+            let dataAsString = uint8arrayToString(data);
+            element['image'] = btoa(dataAsString);
+        }
+        return businessesOrOfferings;
+    }
 
     // useEffect(() => {
     //     console.log("state of communities is: ", communities);
@@ -109,6 +125,17 @@ function App() {
     // useEffect(() => {
     //     console.log("state of businesses is: ", businesses);
     // }, [businesses]);
+
+    // const getOfferingsForBusiness = async (cid: string, owner: string) => {
+    //     if(await connect()) {
+    //         try{
+    //             const offeringsCid = await api.rpc.bazaar.getOfferingsForBusiness(cid, owner);
+    //         }
+    //         catch(e: any) {
+    //             console.log(e);
+    //         }
+    //     }
+    // }
 
     const getAllCommunities = async () => {
         if(await connect()) {
@@ -190,8 +217,11 @@ function App() {
                         {
                             businesses.map(
                                 (business, i) => (
+                                    <div>
                                 <BusinessComponent key={i} business={business}/>
-                                )
+                                <img alt="business icon" src={`data:image/png;base64,${business['image']}`} />
+                                    </div>
+                            )
                             )
                         }
                     </div>
@@ -206,7 +236,10 @@ function App() {
                         <h2>Offerings</h2>
                         {
                             offerings.map((offering, i) => (
+                                <div>
                                 <OfferingComponent key={i} offering={offering}/>
+                                <img alt="offering icon" src={`data:image/png;base64,${offering['image']}`} />
+                                </div>
                             ))
                         }
                     </div>
