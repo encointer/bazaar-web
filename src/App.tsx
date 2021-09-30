@@ -42,8 +42,6 @@ function App() {
         if(await connect()) {
             try{
                 const businessesList = await api.rpc.bazaar.getBusinesses(cid);
-                const rpcMethods = await api.rpc.rpc.methods();
-                console.log("methods: ", rpcMethods);
                 // console.log("businesses from rpc call:", businessesList);
                 let businessUrls: string[] = [];
                 if(businessesList.length > 0) {
@@ -61,10 +59,8 @@ function App() {
         if(await connect()) {
             try{
                 const offeringsList = await api.rpc.bazaar.getOfferings(cid);
-                console.log("offerings from rpc call:", offeringsList);
-                // setOfferings((offeringsList) => offerings);
+                // console.log("offerings from rpc call:", offeringsList);
                 let offeringsUrls: string[] = [];
-                // first convert every object to Offering and then do it
                 if(offeringsList.length > 0) {
                     offeringsUrls = offeringsList.map((e: OfferingData) => e['url'].toString());
                 }
@@ -126,16 +122,17 @@ function App() {
     //     console.log("state of businesses is: ", businesses);
     // }, [businesses]);
 
-    // const getOfferingsForBusiness = async (cid: string, owner: string) => {
-    //     if(await connect()) {
-    //         try{
-    //             const offeringsCid = await api.rpc.bazaar.getOfferingsForBusiness(cid, owner);
-    //         }
-    //         catch(e: any) {
-    //             console.log(e);
-    //         }
-    //     }
-    // }
+    const getOfferingsForBusiness = async (cid: string, owner: string) => {
+        if(await connect()) {
+            try{
+                const offeringsCid = await api.rpc.bazaar.getOfferingsForBusiness(cid, owner);
+                return offeringsCid;
+            }
+            catch(e: any) {
+                console.log(e);
+            }
+        }
+    }
 
     const getAllCommunities = async () => {
         if(await connect()) {
@@ -165,15 +162,17 @@ function App() {
     function handleChange (e: any) {
         // console.log("the target is:", e.target.value);
         let targetCommunity = JSON.parse(e.target.value);
-        console.log("targetCommunity", targetCommunity['name']);
+        // console.log("targetCommunity", targetCommunity['name']);
         setChosenCommunity((targetCommunity) => targetCommunity);
         setBusinesses(() => []);
         setOfferings(() => []);
-
+        getOfferingsForBusiness(targetCommunity['cid'], "//Alice").then((result: any) => {
+            console.log("result of offeringsForBusine:", result);
+        } )
         getBusinessesCids(targetCommunity['cid']).then((business_cids) => {
             let unsubscribeAll: any = null;
             if(business_cids) {
-                console.log("business_cids:", business_cids);
+                // console.log("business_cids:", business_cids);
                 setBusinessesFromCids(business_cids).then(unsub => {
                     unsubscribeAll = unsub;
                 })
@@ -184,7 +183,7 @@ function App() {
         getOfferingsCids(targetCommunity['cid']).then((offering_cids) => {
             let unsubscribeAll: any = null;
             if(offering_cids) {
-                console.log("offering_cids:", offering_cids);
+                // console.log("offering_cids:", offering_cids);
                 setOfferingsFromCids(offering_cids).then(unsub => {
                     unsubscribeAll = unsub;
                 })
