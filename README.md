@@ -1,3 +1,32 @@
+## Web View of registered communities, businesses and offerings
+
+To register a community, first checkout [encointer-node](https://github.com/encointer/encointer-node), cd into the root directory, then build the node and run it (more details can be viewed on the repository page):
+### Build node
+```console
+git clone https://github.com/encointer/encointer-node.git
+cd encointer-node
+cargo build --release
+```
+
+Run dev node locally
+
+```console
+./target/release/encointer-node-notee --dev --tmp --enable-offchain-indexing true --ws-port 9945 --rpc-methods unsafe
+```
+
+After the node is running, cd into encointer-node/client and run the following two scripts consequently:
+```console
+./bot-community.py init
+./register-businesses.py
+```
+The first script will register a community on the node and the second will register two businesses with offerings for the community.
+You can repeat this two scripts, if you want to add further communities and register more businesses and offerings.
+
+Then you can install the dependencies and run the react app:
+```console
+yarn install
+yarn start
+```
 # Getting Started with Create React App
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
