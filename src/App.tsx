@@ -1,7 +1,7 @@
 import React, {useEffect, useState} from 'react';
 // import logo from './logo.svg';
 import './App.css';
-import {ApiPromise, WsProvider} from '@polkadot/api';
+import {ApiPromise, Keyring, WsProvider} from '@polkadot/api';
 import {options} from "@encointer/node-api/options";
 import {Business, BusinessData, Community, Offering, OfferingData} from "./Types";
 import {getChunks, uint8arrayToString} from './helpers';
@@ -18,10 +18,11 @@ function App() {
     const [communities, setCommunities] = useState<Community[]>([]);
     const [chosenCommunity, setChosenCommunity] = useState();
     let api: any;
-
+    let keyring: Keyring;
     const connect = async () => {
         // let api: ApiPromise;
         const chain = 'ws://127.0.0.1:9944';
+        keyring = new Keyring({ type: 'sr25519' });
         const provider = new WsProvider('ws://127.0.0.1:9944');
         try {
             api = await ApiPromise.create({
@@ -122,10 +123,12 @@ function App() {
     //     console.log("state of businesses is: ", businesses);
     // }, [businesses]);
 
-    const getOfferingsForBusiness = async (cid: string, owner: string) => {
+    const getOfferingsForBusiness = async (cid: string) => {
         if(await connect()) {
+            const alice = keyring.addFromUri('//Alice', { name: 'Alice default' })
+            const bid= api.createType('BusinessIdentifier', [cid, alice.publicKey]);
             try{
-                const offeringsCid = await api.rpc.bazaar.getOfferingsForBusiness(cid, owner);
+                const offeringsCid = await api.rpc.bazaar.getOfferingsForBusiness(bid);
                 return offeringsCid;
             }
             catch(e: any) {
@@ -166,9 +169,11 @@ function App() {
         setChosenCommunity((targetCommunity) => targetCommunity);
         setBusinesses(() => []);
         setOfferings(() => []);
-        getOfferingsForBusiness(targetCommunity['cid'], "//Alice").then((result: any) => {
-            console.log("result of offeringsForBusine:", result);
-        } )
+        // this is how you can for example get offerings for a business
+        // getOfferingsForBusiness(targetCommunity['cid']).then((result: any) => {
+        //     console.log("result of offeringsForBusinesses:", result);
+        //     setOfferingsFromCids(result['url']);
+        // } )
         getBusinessesCids(targetCommunity['cid']).then((business_cids) => {
             let unsubscribeAll: any = null;
             if(business_cids) {
