@@ -1,4 +1,5 @@
 const ipfsClient = require('ipfs-http-client')
+// const ipfsClient = require('ipfs-api')
 
 /*
 I exported the client to a external method... best practice?
