@@ -8,7 +8,7 @@ import {getChunks, uint8arrayToString} from './helpers';
 import {getInfuraClient} from "./settings";
 import {BusinessComponent} from "./BusinessComponent";
 import {OfferingComponent} from "./OfferingComponent";
-// import {Simulate} from "react-dom/test-utils";
+
 
 function App() {
     const client = getInfuraClient();
@@ -123,6 +123,7 @@ function App() {
     //     console.log("state of businesses is: ", businesses);
     // }, [businesses]);
 
+    // eslint-disable-next-line
     const getOfferingsForBusiness = async (cid: string) => {
         if(await connect()) {
             const alice = keyring.addFromUri('//Alice', { name: 'Alice default' })
