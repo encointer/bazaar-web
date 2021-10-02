@@ -11,7 +11,7 @@ cargo build --release
 Run dev node locally
 
 ```console
-./target/release/encointer-node-notee --dev --tmp --enable-offchain-indexing true --ws-port 9945 --rpc-methods unsafe
+./target/release/encointer-node-notee --dev --tmp --enable-offchain-indexing true --ws-port 9944 --rpc-methods unsafe
 ```
 
 After the node is running, cd into encointer-node/client and run the following two scripts consequently:
