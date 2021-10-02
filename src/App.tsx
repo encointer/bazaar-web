@@ -1,123 +1,260 @@
-import React, { useEffect, useState } from 'react';
+import React, {useEffect, useState} from 'react';
 // import logo from './logo.svg';
 import './App.css';
-
-import {ApiPromise, WsProvider} from '@polkadot/api';
+import {ApiPromise, Keyring, WsProvider} from '@polkadot/api';
 import {options} from "@encointer/node-api/options";
-
-const IPFS = require('ipfs-core');
-
-interface BusinessData {
-  url: string;
-  oid: number;
-}
-
-// interface Business {
-//   name: string;
-//   description: string;
-// }
-
-// interface OfferingData {
-//   url: string;
-//   oid: number;
-// }
+import {Business, BusinessData, Community, Offering, OfferingData} from "./Types";
+import {getChunks, uint8arrayToString} from './helpers';
+import {getInfuraClient} from "./settings";
+import {BusinessComponent} from "./BusinessComponent";
+import {OfferingComponent} from "./OfferingComponent";
+// import {Simulate} from "react-dom/test-utils";
 
 function App() {
-  const [businesses, setBusinesses] = useState<BusinessData[]>();
-  // const [communities, setCommunities] = useState();
-  let api: any;
+    const client = getInfuraClient();
 
-  const connect = async () => {
-    // let api: ApiPromise;
-    const chain = 'ws://127.0.0.1:9944';
-    const provider = new WsProvider('ws://127.0.0.1:9944');
-    try {
-      api = await ApiPromise.create({
-          ...options(),
-          provider: provider
-      });
-      console.log(`${chain} wss connected success`);
-      return true;
-    } 
-    catch (err) {
-      console.log(`connect ${chain} failed`);
-      await provider.disconnect();
-    }
-  }
-
-  connect();
-
-  const getBusinesses = async () => {
-    if(await connect()) {
-      // const communities = await api.rpc.communities.getAll();
-      // console.log("communities get all returns type:", typeof result);
-      // console.log(communities);
-      // const bid = api.createType('BusinessIdentifier', {});
-      const businesses = await api.rpc.bazaar.getBusinesses("0xa7c3c66819ea4962f65b0a9525017e43adc662096482313f31dd08eb0a7aa53f");
-      // console.log("businesses get all returns type:", typeof businesses);
-      setBusinesses(businesses);
-      // setCommunities(communities);
-      // Object.keys(businesses).map((key, i) => (
-      console.log("businesses: --- ", businesses);
-      
-      const ipfs = await IPFS.create();
-
-      let businessUrls: string[] = [];
-      
-      //TO-DO: I get an array of Maps with key url and key oid. for now, i take every element, and push the url to a list
-
-      // console.log("businesses[0]['url']: --- ", businesses[0]['url']);
-      let exampleJsons = [];
-      if(businesses.length > 0) {
-        businessUrls = businesses.map((e: BusinessData) => e['url']);
-        businessUrls.forEach(e => 
-          exampleJsons.push(ipfs.get(e)));
-        // jsonExample =  ipfs.get(busi)
-      }
-      // console.log("type of businesses:",typeof businesses);
-  }
-}
-  useEffect(() => {
-    let unsubscribeAll: any = null;
-    getBusinesses()
-      .then(unsub => {
-        unsubscribeAll = unsub;
-      })
-      .catch(console.error);
-      return () => unsubscribeAll && unsubscribeAll();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  return (
-    <div className="App">
-      <h1>Businesses</h1>
-        
-        {businesses ? ( 
-        <div>
-          {/* {businesses} */}
-          {/* {businesses[1]['url']} */}
-          {
-            // businesses.map((business) => ( Object.entries(business).map((value,key) => (
-            //   <span>
-            //   <p> 
-            //     {key}
-            //   </p>
-            //   <p>
-            //     {value}
-            //   </p>
-            //   </span>
-            // ))))
-          }
-
-        </div>
-        )
-        : 
-        (
-          <div>businesses empty</div>
-        )
+    const [businesses, setBusinesses] = useState<Business[]>([]);
+    const [offerings, setOfferings] = useState<Offering[]>([]);
+    const [communities, setCommunities] = useState<Community[]>([]);
+    const [chosenCommunity, setChosenCommunity] = useState();
+    let api: any;
+    let keyring: Keyring;
+    const connect = async () => {
+        // let api: ApiPromise;
+        const chain = 'ws://127.0.0.1:9944';
+        keyring = new Keyring({ type: 'sr25519' });
+        const provider = new WsProvider('ws://127.0.0.1:9944');
+        try {
+            api = await ApiPromise.create({
+                ...options(),
+                provider: provider
+            });
+            console.log(`${chain} wss connected success`);
+            return true;
         }
-    </div>
-  );
+        catch (err) {
+            console.log(`connect ${chain} failed`);
+            await provider.disconnect();
+        }
+    }
+    connect();
+
+    const getBusinessesCids = async (cid: string) => {
+        if(await connect()) {
+            try{
+                const businessesList = await api.rpc.bazaar.getBusinesses(cid);
+                // console.log("businesses from rpc call:", businessesList);
+                let businessUrls: string[] = [];
+                if(businessesList.length > 0) {
+                    businessUrls = businessesList.map((e: BusinessData) => e['url'].toString());
+                }
+                return businessUrls;
+            }
+            catch(e){
+                console.log(e);
+            }
+        }
+    }
+
+    const getOfferingsCids = async (cid: string) => {
+        if(await connect()) {
+            try{
+                const offeringsList = await api.rpc.bazaar.getOfferings(cid);
+                // console.log("offerings from rpc call:", offeringsList);
+                let offeringsUrls: string[] = [];
+                if(offeringsList.length > 0) {
+                    offeringsUrls = offeringsList.map((e: OfferingData) => e['url'].toString());
+                }
+                return offeringsUrls;
+            }
+            catch(e){
+                console.log(e);
+            }
+        }
+    }
+
+    const setBusinessesFromCids = async (cids: string[]) => {
+
+        let data: number[] = [];
+        let businesses: Business[] = [];
+        for (const cid of cids) {
+            let stream = client.cat(cid);
+            data = await getChunks(stream);
+            let dataAsString = uint8arrayToString(data);
+            let business: Business = JSON.parse(dataAsString);
+            businesses.push(business);
+        }
+        businesses = await getImageFromIpfsConvertToBase64AndSetProperty(client, businesses);
+        setBusinesses(oldArray => ([...oldArray, ...businesses]));
+    }
+
+    const setOfferingsFromCids = async (cids: string[]) => {
+        let data: number[] = [];
+        let offerings: Offering[] = [];
+        for (const cid of cids) {
+            let stream = client.cat(cid);
+            data = await getChunks(stream);
+            let dataAsString = uint8arrayToString(data);
+            let offering: Offering = JSON.parse(dataAsString);
+            offerings.push(offering)
+        }
+        offerings = await getImageFromIpfsConvertToBase64AndSetProperty(client, offerings);
+        setOfferings(oldArray => [...oldArray, ...offerings]);
+
+    }
+
+    const getImageFromIpfsConvertToBase64AndSetProperty = async (client: any, businessesOrOfferings: any[]) => {
+        let data: number[] = [];
+        for (const element of businessesOrOfferings) {
+            let image_cid = element['image_cid'];
+            let stream = client.cat(image_cid);
+            data = await getChunks(stream);
+            let dataAsString = uint8arrayToString(data);
+            element['image'] = btoa(dataAsString);
+        }
+        return businessesOrOfferings;
+    }
+
+    // useEffect(() => {
+    //     console.log("state of communities is: ", communities);
+    // }, [communities]);
+    //
+    // useEffect(() => {
+    //     console.log("state of businesses is: ", businesses);
+    // }, [businesses]);
+
+    const getOfferingsForBusiness = async (cid: string) => {
+        if(await connect()) {
+            const alice = keyring.addFromUri('//Alice', { name: 'Alice default' })
+            const bid= api.createType('BusinessIdentifier', [cid, alice.publicKey]);
+            try{
+                const offeringsCid = await api.rpc.bazaar.getOfferingsForBusiness(bid);
+                return offeringsCid;
+            }
+            catch(e: any) {
+                console.log(e);
+            }
+        }
+    }
+
+    const getAllCommunities = async () => {
+        if(await connect()) {
+            try {
+                const communitiesArray: Community[] = await api.rpc.communities.getAll();
+                setCommunities((oldArray: Community[]) => ([...oldArray, ...communitiesArray]));
+            }
+            catch(e: any) {
+                console.log(e);
+            }
+        }
+    }
+
+    useEffect(()=> {
+        getAllCommunities();
+        // eslint-disable-next-line
+    }, [])
+
+    let communityList = communities.length > 0
+        && communities.map((community, i) => {
+            // console.log("a community from communities_state:", community);
+            return (
+                <option key={i} value={community.toString()}> {community['name']}</option>
+            )
+        });
+
+    function handleChange (e: any) {
+        // console.log("the target is:", e.target.value);
+        let targetCommunity = JSON.parse(e.target.value);
+        // console.log("targetCommunity", targetCommunity['name']);
+        setChosenCommunity((targetCommunity) => targetCommunity);
+        setBusinesses(() => []);
+        setOfferings(() => []);
+        // this is how you can for example get offerings for a business
+        // getOfferingsForBusiness(targetCommunity['cid']).then((result: any) => {
+        //     console.log("result of offeringsForBusinesses:", result);
+        //     setOfferingsFromCids(result['url']);
+        // } )
+        getBusinessesCids(targetCommunity['cid']).then((business_cids) => {
+            let unsubscribeAll: any = null;
+            if(business_cids) {
+                // console.log("business_cids:", business_cids);
+                setBusinessesFromCids(business_cids).then(unsub => {
+                    unsubscribeAll = unsub;
+                })
+                    .catch(console.error);
+                return () => unsubscribeAll && unsubscribeAll();
+            }
+        });
+        getOfferingsCids(targetCommunity['cid']).then((offering_cids) => {
+            let unsubscribeAll: any = null;
+            if(offering_cids) {
+                // console.log("offering_cids:", offering_cids);
+                setOfferingsFromCids(offering_cids).then(unsub => {
+                    unsubscribeAll = unsub;
+                })
+                    .catch(console.error);
+                return () => unsubscribeAll && unsubscribeAll();
+            }
+        });
+    }
+
+    return (
+        <div className="App">
+            <h1>Businesses And Offerings Per Community</h1>
+            {communities ? (
+                    <div>
+                        <select
+                            defaultValue="choose a community"
+                            value={chosenCommunity}
+                            onChange={handleChange}
+                        >
+                            <option disabled>choose a community</option>
+                            {communityList}
+                        </select>
+                    </div>)
+                :
+                (<div> </div>)
+            }
+            {businesses ? (
+                    <div>
+                        <h2>Businesses</h2>
+                        {
+                            businesses.map(
+                                (business, i) => (
+                                    <div>
+                                <BusinessComponent key={i} business={business}/>
+                                <img alt="business icon" src={`data:image/png;base64,${business['image']}`} />
+                                    </div>
+                            )
+                            )
+                        }
+                    </div>
+                )
+                :
+                (
+                    <div>no businesses</div>
+                )
+            }
+            {offerings ? (
+                    <div>
+                        <h2>Offerings</h2>
+                        {
+                            offerings.map((offering, i) => (
+                                <div>
+                                <OfferingComponent key={i} offering={offering}/>
+                                <img alt="offering icon" src={`data:image/png;base64,${offering['image']}`} />
+                                </div>
+                            ))
+                        }
+                    </div>
+            ) :
+                (
+                    <div>no offerings</div>
+                )
+
+            }
+        </div>
+    );
 }
 
 export default App;
