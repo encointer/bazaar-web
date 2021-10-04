@@ -1,13 +1,13 @@
 import {Business, Community, Offering} from './Types';
 
 export class MockData {
-    communities: Community[] = [{name: "PrimaCommuna", cid: "0xasdklöfjhasdfjlksöadfjöalskdfjölk"}, {name: "SecondaCommuna", cid: "0xaklsfjalksjdfjlasdkfjlksd"}];
-    businesses: Business[] = [{name: "doenermachhtschoener", description: "doener verbessert die welt", image_cid: "Defau1tCidThat1s46Characters1nLength1111111111", image: ""}, {name: "spaggetthi", description: "spaggetthi ist auch gut", image_cid: "Defau1tCidThat1s46Characters1nLength1111111111", image: ""} ];
-    offerings: Offering[] = [{name: "firstOffer", price: 1, community: "0xasdklöfjhasdfjlksöadfjöalskdfjölk", image_cid: "Defau1tCidThat1s46Characters1nLength1111111111",
+    communitiesMock: Community[] = [{name: "PrimaCommuna", cid: "0xasdklöfjhasdfjlksöadfjöalskdfjölk"}, {name: "SecondaCommuna", cid: "0xaklsfjalksjdfjlasdkfjlksd"}];
+    businessesMock: Business[] = [{name: "doenermachhtschoener", description: "doener verbessert die welt", image_cid: "Defau1tCidThat1s46Characters1nLength1111111111", image: ""}, {name: "spaggetthi", description: "spaggetthi ist auch gut", image_cid: "Defau1tCidThat1s46Characters1nLength1111111111", image: ""} ];
+    offeringsMock: Offering[] = [{name: "firstOffer", price: 1, community: "0xasdklöfjhasdfjlksöadfjöalskdfjölk", image_cid: "Defau1tCidThat1s46Characters1nLength1111111111",
         image: ""}, {name: "secondOffer", price: 2, community: "0xasdklöfjhasdfjlksöadfjöalskdfjölk", image_cid: "Defau1tCidThat1s46Characters1nLength1111111111",
         image: ""}]
-    stream = {};
-    infuraBusinesses: number[] = [
+    streamMock = {};
+    infuraBusinessesMock: number[] = [
         123,
         10,
         32,
@@ -97,7 +97,7 @@ export class MockData {
         34,
         10,
         125];
-    infuraOfferings: number[] =  [
+    infuraOfferingsMock: number[] =  [
         123,
         10,
         32,
