@@ -13,5 +13,16 @@ export const getInfuraClient = () => {
         headers: {
         }
     })
-}
+};
 
+export const getLocalClient = () => {
+    return ipfsClient.create({
+        host: '127.0.0.1',
+        port: 5001,
+        protocol: 'https'
+    })
+};
+
+export const localChain = 'ws://127.0.0.1:9944';
+
+export const remoteChain = 'wss://gesell.encointer.org';

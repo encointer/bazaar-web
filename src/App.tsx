@@ -5,28 +5,36 @@ import {ApiPromise, Keyring, WsProvider} from '@polkadot/api';
 import {options} from "@encointer/node-api/options";
 import {Business, BusinessData, Community, Offering, OfferingData} from "./Types";
 import {getChunks, uint8arrayToString} from './helpers';
-import {getInfuraClient} from "./settings";
+import {localChain, remoteChain, getInfuraClient, getLocalClient} from "./settings";
 import {BusinessComponent} from "./BusinessComponent";
 import {OfferingComponent} from "./OfferingComponent";
-import {MockData} from "./MockData";
+import MockData from './MockData'
 
+let client: any;
+let api: any;
+let keyring: Keyring;
+let chain: string;
 if (process.env.REACT_APP_NEXT_PUBLIC_API_MOCKING === "enabled") {
-    require('./MockData');
-    console.log("env-variable loaded!!")
+    console.log("Mocking enabled")
 }
-function App() {
-    const client = getInfuraClient();
+if (process.env.REACT_APP_LOCAL === "enabled") {
+    console.log("local mode (ipfs & gesell)")
+    chain = localChain;
+    client = getLocalClient();
+}
+else {
+    console.log("remote mode (ipfs & local gesell)")
+    chain = localChain;
+    client = getInfuraClient();
+}
 
+function App() {
     const [businesses, setBusinesses] = useState<Business[]>([]);
     const [offerings, setOfferings] = useState<Offering[]>([]);
     const [communities, setCommunities] = useState<Community[]>([]);
     const [chosenCommunity, setChosenCommunity] = useState();
-
-    let api: any;
-    let keyring: Keyring;
     const connect = async () => {
         // let api: ApiPromise;
-        const chain = 'ws://127.0.0.1:9944';
         keyring = new Keyring({ type: 'sr25519' });
         const provider = new WsProvider('ws://127.0.0.1:9944');
         try {
@@ -92,7 +100,6 @@ function App() {
         });
 
         const setBusinessesFromCids = async (cids: string[]) => {
-
             let data: number[] = [];
             let businesses: Business[] = [];
             for (const cid of cids) {
@@ -133,18 +140,13 @@ function App() {
             return businessesOrOfferings;
         }
 
-        // const setBusinessesFromCidsMock = async (cids: string[]) => {
-        //     let MockDataObject = new MockData();
-        //     setBusinesses(oldArray => ([...oldArray, ...MockDataObject.businessesMock]));
-        // }
-
     // useEffect(() => {
     //     console.log("state of communities is: ", communities);
     // }, [communities]);
     //
-    // useEffect(() => {
-    //     console.log("state of businesses is: ", businesses);
-    // }, [businesses]);
+    useEffect(() => {
+        console.log("state of businesses is: ", businesses);
+    }, [businesses]);
 
     // eslint-disable-next-line
     const getOfferingsForBusiness = async (cid: string) => {
@@ -162,22 +164,26 @@ function App() {
     }
 
     const getAllCommunities = async () => {
-        if(await connect()) {
-            try {
-                const communitiesArray: Community[] = await api.rpc.communities.getAll();
-                setCommunities((oldArray: Community[]) => ([...oldArray, ...communitiesArray]));
+        if (!(process.env.REACT_APP_NEXT_PUBLIC_API_MOCKING === "enabled")) {
+            if(await connect()) {
+                try {
+                    const communitiesArray: Community[] = await api.rpc.communities.getAll();
+                    setCommunities((oldArray: Community[]) => ([...oldArray, ...communitiesArray]));
+                }
+                catch(e: any) {
+                    console.log(e);
+                }
             }
-            catch(e: any) {
-                console.log(e);
-            }
+        }
+        else {
+            let mock = new MockData();
+            setCommunities((oldArray: Community[]) => [...oldArray, ...mock.communitiesMock]);
         }
     }
 
     function handleChange (e: any) {
         // console.log("the target is:", e.target.value);
-        let targetCommunity = JSON.parse(e.target.value);
         // console.log("targetCommunity", targetCommunity['name']);
-        setChosenCommunity((targetCommunity) => targetCommunity);
         setBusinesses(() => []);
         setOfferings(() => []);
         // this is how you can for example get offerings for a business
@@ -185,7 +191,10 @@ function App() {
         //     console.log("result of offeringsForBusinesses:", result);
         //     setOfferingsFromCids(result['url']);
         // } )
+
         if (!(process.env.REACT_APP_NEXT_PUBLIC_API_MOCKING === "enabled")) {
+            let targetCommunity = JSON.parse(e.target.value);
+            setChosenCommunity((targetCommunity) => targetCommunity);
             getBusinessesCids(targetCommunity['cid']).then((business_cids) => {
                 let unsubscribeAll: any = null;
                 if (business_cids) {
@@ -209,8 +218,10 @@ function App() {
                 }
             });
         }
+
         else {
             let mock = new MockData();
+            setChosenCommunity((targetCommunity) => targetCommunity);
             setBusinesses(oldArray => ([...oldArray, ...mock.businessesMock]));
             setOfferings(oldArray => ([...oldArray, ...mock.offeringsMock]));
         }
