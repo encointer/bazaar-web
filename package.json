@@ -24,7 +24,7 @@
     "build": "react-scripts build",
     "test": "react-scripts test --transformIgnorePatterns \"node_modules/(?!@polkadot/api/allow-react)/\" --env=jsdom",
     "local": "REACT_APP_LOCAL=enabled yarn start",
-    "local:mock": "REACT_APP_LOCAL=enabled REACT_APP_NEXT_PUBLIC_API_MOCKING=enabled yarn start",
+    "local:mock": "REACT_APP_LOCAL=enabled REACT_APP_MOCKING=enabled yarn start",
     "eject": "react-scripts eject"
   },
   "eslintConfig": {

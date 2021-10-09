@@ -14,15 +14,14 @@ let client: any;
 let api: any;
 let keyring: Keyring;
 let chain: string;
-if (process.env.REACT_APP_NEXT_PUBLIC_API_MOCKING === "enabled") {
+if (process.env.REACT_APP_MOCKING === "enabled") {
     console.log("Mocking enabled")
 }
 if (process.env.REACT_APP_LOCAL === "enabled") {
     console.log("local mode (ipfs & gesell)")
     chain = localChain;
     client = getLocalClient();
-}
-else {
+} else {
     console.log("remote mode (ipfs & gesell)")
     chain = remoteChain;
     client = getInfuraClient();
@@ -35,7 +34,7 @@ function App() {
     const [chosenCommunity, setChosenCommunity] = useState();
     const connect = async () => {
         // let api: ApiPromise;
-        keyring = new Keyring({ type: 'sr25519' });
+        keyring = new Keyring({type: 'sr25519'});
         const provider = new WsProvider(chain);
         try {
             api = await ApiPromise.create({
@@ -44,8 +43,7 @@ function App() {
             });
             console.log(`${chain} wss connected success`);
             return true;
-        }
-        catch (err) {
+        } catch (err) {
             console.log(`connect ${chain} failed`);
             await provider.disconnect();
         }
@@ -53,40 +51,38 @@ function App() {
     connect();
 
     const getBusinessesCids = async (cid: string) => {
-        if(await connect()) {
-            try{
+        if (await connect()) {
+            try {
                 const businessesList = await api.rpc.bazaar.getBusinesses(cid);
                 // console.log("businesses from rpc call:", businessesList);
                 let businessUrls: string[] = [];
-                if(businessesList.length > 0) {
+                if (businessesList.length > 0) {
                     businessUrls = businessesList.map((e: BusinessData) => e['url'].toString());
                 }
                 return businessUrls;
-            }
-            catch(e){
+            } catch (e) {
                 console.log(e);
             }
         }
     }
 
     const getOfferingsCids = async (cid: string) => {
-        if(await connect()) {
-            try{
+        if (await connect()) {
+            try {
                 const offeringsList = await api.rpc.bazaar.getOfferings(cid);
                 // console.log("offerings from rpc call:", offeringsList);
                 let offeringsUrls: string[] = [];
-                if(offeringsList.length > 0) {
+                if (offeringsList.length > 0) {
                     offeringsUrls = offeringsList.map((e: OfferingData) => e['url'].toString());
                 }
                 return offeringsUrls;
-            }
-            catch(e){
+            } catch (e) {
                 console.log(e);
             }
         }
     }
 
-    useEffect(()=> {
+    useEffect(() => {
         getAllCommunities();
         // eslint-disable-next-line
     }, [])
@@ -99,46 +95,46 @@ function App() {
             )
         });
 
-        const setBusinessesFromCids = async (cids: string[]) => {
-            let data: number[] = [];
-            let businesses: Business[] = [];
-            for (const cid of cids) {
-                let stream = client.cat(cid);
-                data = await getChunks(stream);
-                let dataAsString = uint8arrayToString(data);
-                let business: Business = JSON.parse(dataAsString);
-                businesses.push(business);
-            }
-            businesses = await getImageFromIpfsConvertToBase64AndSetProperty(client, businesses);
-            setBusinesses(oldArray => ([...oldArray, ...businesses]));
+    const setBusinessesFromCids = async (cids: string[]) => {
+        let data: number[] = [];
+        let businesses: Business[] = [];
+        for (const cid of cids) {
+            let stream = client.cat(cid);
+            data = await getChunks(stream);
+            let dataAsString = uint8arrayToString(data);
+            let business: Business = JSON.parse(dataAsString);
+            businesses.push(business);
         }
+        businesses = await getImageFromIpfsConvertToBase64AndSetProperty(client, businesses);
+        setBusinesses(oldArray => ([...oldArray, ...businesses]));
+    }
 
-        const setOfferingsFromCids = async (cids: string[]) => {
-            let data: number[] = [];
-            let offerings: Offering[] = [];
-            for (const cid of cids) {
-                let stream = client.cat(cid);
-                data = await getChunks(stream);
-                let dataAsString = uint8arrayToString(data);
-                let offering: Offering = JSON.parse(dataAsString);
-                offerings.push(offering)
-            }
-            offerings = await getImageFromIpfsConvertToBase64AndSetProperty(client, offerings);
-            setOfferings(oldArray => [...oldArray, ...offerings]);
-
+    const setOfferingsFromCids = async (cids: string[]) => {
+        let data: number[] = [];
+        let offerings: Offering[] = [];
+        for (const cid of cids) {
+            let stream = client.cat(cid);
+            data = await getChunks(stream);
+            let dataAsString = uint8arrayToString(data);
+            let offering: Offering = JSON.parse(dataAsString);
+            offerings.push(offering)
         }
+        offerings = await getImageFromIpfsConvertToBase64AndSetProperty(client, offerings);
+        setOfferings(oldArray => [...oldArray, ...offerings]);
 
-        const getImageFromIpfsConvertToBase64AndSetProperty = async (client: any, businessesOrOfferings: any[]) => {
-            let data: number[] = [];
-            for (const element of businessesOrOfferings) {
-                let image_cid = element['image_cid'];
-                let stream = client.cat(image_cid);
-                data = await getChunks(stream);
-                let dataAsString = uint8arrayToString(data);
-                element['image'] = btoa(dataAsString);
-            }
-            return businessesOrOfferings;
+    }
+
+    const getImageFromIpfsConvertToBase64AndSetProperty = async (client: any, businessesOrOfferings: any[]) => {
+        let data: number[] = [];
+        for (const element of businessesOrOfferings) {
+            let image_cid = element['image_cid'];
+            let stream = client.cat(image_cid);
+            data = await getChunks(stream);
+            let dataAsString = uint8arrayToString(data);
+            element['image'] = btoa(dataAsString);
         }
+        return businessesOrOfferings;
+    }
 
     // useEffect(() => {
     //     console.log("state of communities is: ", communities);
@@ -150,37 +146,34 @@ function App() {
 
     // eslint-disable-next-line
     const getOfferingsForBusiness = async (cid: string) => {
-        if(await connect()) {
-            const alice = keyring.addFromUri('//Alice', { name: 'Alice default' })
-            const bid= api.createType('BusinessIdentifier', [cid, alice.publicKey]);
-            try{
+        if (await connect()) {
+            const alice = keyring.addFromUri('//Alice', {name: 'Alice default'})
+            const bid = api.createType('BusinessIdentifier', [cid, alice.publicKey]);
+            try {
                 return await api.rpc.bazaar.getOfferingsForBusiness(bid);
-            }
-            catch(e: any) {
+            } catch (e: any) {
                 console.log(e);
             }
         }
     }
 
     const getAllCommunities = async () => {
-        if (!(process.env.REACT_APP_NEXT_PUBLIC_API_MOCKING === "enabled")) {
-            if(await connect()) {
+        if (!(process.env.REACT_APP_MOCKING === "enabled")) {
+            if (await connect()) {
                 try {
                     const communitiesArray: Community[] = await api.rpc.communities.getAll();
                     setCommunities((oldArray: Community[]) => ([...oldArray, ...communitiesArray]));
-                }
-                catch(e: any) {
+                } catch (e: any) {
                     console.log(e);
                 }
             }
-        }
-        else {
+        } else {
             let mock = new MockData();
             setCommunities((oldArray: Community[]) => [...oldArray, ...mock.communitiesMock]);
         }
     }
 
-    function handleChange (e: any) {
+    function handleChange(e: any) {
         // console.log("the target is:", e.target.value);
         // console.log("targetCommunity", targetCommunity['name']);
         setBusinesses(() => []);
@@ -191,7 +184,7 @@ function App() {
         //     setOfferingsFromCids(result['url']);
         // } )
 
-        if (!(process.env.REACT_APP_NEXT_PUBLIC_API_MOCKING === "enabled")) {
+        if (!(process.env.REACT_APP_MOCKING === "enabled")) {
             let targetCommunity = JSON.parse(e.target.value);
             setChosenCommunity((targetCommunity) => targetCommunity);
             getBusinessesCids(targetCommunity['cid']).then((business_cids) => {
@@ -216,11 +209,8 @@ function App() {
                     return () => unsubscribeAll && unsubscribeAll();
                 }
             });
-        }
-
-        else {
+        } else {
             let mock = new MockData();
-            setChosenCommunity((targetCommunity) => targetCommunity);
             setBusinesses(oldArray => ([...oldArray, ...mock.businessesMock]));
             setOfferings(oldArray => ([...oldArray, ...mock.offeringsMock]));
         }
@@ -229,7 +219,7 @@ function App() {
     return (
         <div className="App">
             <h1>Businesses And Offerings Per Community</h1>
-            {communities ? (
+            {(communities.length > 0) ? (
                     <div>
                         <select
                             defaultValue="choose a community"
@@ -240,47 +230,33 @@ function App() {
                             {communityList}
                         </select>
                     </div>)
-                :
-                (<div> </div>)
-            }
+                : (<div>no communities</div>)}
             {businesses ? (
-                    <div>
-                        <h2>Businesses</h2>
-                        {
-                            businesses.map(
-                                (business, i) => (
-                                    <div>
-                                <BusinessComponent key={i} business={business}/>
-                                <img alt="business icon" src={`data:image/png;base64,${business['image']}`} />
-                                    </div>
-                            )
-                            )
-                        }
-                    </div>
-                )
-                :
-                (
-                    <div>no businesses</div>
-                )
-            }
+                <div>
+                    <h2>Businesses</h2>
+                    {
+                        businesses.map((business, i) => (
+                            <div key={i}>
+                                <BusinessComponent business={business}/>
+                                <img alt="business icon" src={`data:image/png;base64,${business['image']}`}/>
+                            </div>
+                        ))
+                    }
+                </div>
+            ) : (<div>no businesses</div>)}
             {offerings ? (
-                    <div>
-                        <h2>Offerings</h2>
-                        {
-                            offerings.map((offering, i) => (
-                                <div>
-                                <OfferingComponent key={i} offering={offering}/>
-                                <img alt="offering icon" src={`data:image/png;base64,${offering['image']}`} />
-                                </div>
-                            ))
-                        }
-                    </div>
-            ) :
-                (
-                    <div>no offerings</div>
-                )
-
-            }
+                <div>
+                    <h2>Offerings</h2>
+                    {
+                        offerings.map((offering, i) => (
+                            <div key={i}>
+                                <OfferingComponent offering={offering}/>
+                                <img alt="offering icon" src={`data:image/png;base64,${offering['image']}`}/>
+                            </div>
+                        ))
+                    }
+                </div>
+            ) : (<div>no offerings</div>)}
         </div>
     );
 }
