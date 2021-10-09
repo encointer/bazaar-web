@@ -36,7 +36,7 @@ function App() {
     const connect = async () => {
         // let api: ApiPromise;
         keyring = new Keyring({ type: 'sr25519' });
-        const provider = new WsProvider('ws://127.0.0.1:9944');
+        const provider = new WsProvider(chain);
         try {
             api = await ApiPromise.create({
                 ...options(),
@@ -154,8 +154,7 @@ function App() {
             const alice = keyring.addFromUri('//Alice', { name: 'Alice default' })
             const bid= api.createType('BusinessIdentifier', [cid, alice.publicKey]);
             try{
-                const offeringsCid = await api.rpc.bazaar.getOfferingsForBusiness(bid);
-                return offeringsCid;
+                return await api.rpc.bazaar.getOfferingsForBusiness(bid);
             }
             catch(e: any) {
                 console.log(e);
