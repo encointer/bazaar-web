@@ -26,14 +26,21 @@ Then you can install the dependencies:
 ```console
 yarn install
 ```
-And run the react app:
+There are several ways to start the react app.
+With:
 ```console
 yarn start
 ```
-Alternatively, you can run the app with Mockdata: 
+You connect to gesell.encointer.org and use the remote ipfs node.
+Alternatively, you can run the app with local ipfs and local gesell node: 
 ```console
-yarn dev
+yarn local
 ```
+A third option is for testing on local ipfs and local gesell with mock data 
+```console
+yarn local:mock
+```
+
 # Getting Started with Create React App
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
