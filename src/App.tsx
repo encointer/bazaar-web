@@ -21,6 +21,10 @@ if (process.env.REACT_APP_LOCAL === "enabled") {
     console.log("local mode (ipfs & gesell)")
     chain = localChain;
     client = getLocalClient();
+} else if (process.env.REACT_APP_LOCAL_CHAIN_REMOTE_IPFS === "enabled") {
+    console.log("local mode chain and remote ipfs")
+    chain = localChain;
+    client = getInfuraClient();
 } else {
     console.log("remote mode (ipfs & gesell)")
     chain = remoteChain;

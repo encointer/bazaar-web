@@ -25,6 +25,7 @@
     "test": "react-scripts test --transformIgnorePatterns \"node_modules/(?!@polkadot/api/allow-react)/\" --env=jsdom",
     "local": "REACT_APP_LOCAL=enabled yarn start",
     "local:mock": "REACT_APP_LOCAL=enabled REACT_APP_MOCKING=enabled yarn start",
+    "local-chain-remote-ipfs": "REACT_APP_LOCAL_CHAIN_REMOTE_IPFS=enabled yarn start",
     "eject": "react-scripts eject"
   },
   "eslintConfig": {
