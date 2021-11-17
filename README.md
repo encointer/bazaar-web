@@ -22,11 +22,25 @@ After the node is running, cd into encointer-node/client and run the following t
 The first script will register a community on the node and the second will register two businesses with offerings for the community.
 You can repeat this two scripts, if you want to add further communities and register more businesses and offerings.
 
-Then you can install the dependencies and run the react app:
+Then you can install the dependencies:
 ```console
 yarn install
+```
+There are several ways to start the react app.
+With:
+```console
 yarn start
 ```
+You connect to gesell.encointer.org and use the remote ipfs node.
+Alternatively, you can run the app with local ipfs and local gesell node: 
+```console
+yarn local
+```
+A third option is for testing on local ipfs and local gesell with mock data 
+```console
+yarn local:mock
+```
+
 # Getting Started with Create React App
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
