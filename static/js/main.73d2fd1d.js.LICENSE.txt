@@ -4,13 +4,6 @@ object-assign
 @license MIT
 */
 
-/*!
- * The buffer module from node.js, for the browser.
- *
- * @author   Feross Aboukhadijeh <feross@feross.org> <http://feross.org>
- * @license  MIT
- */
-
 /*! noble-secp256k1 - MIT License (c) 2019 Paul Miller (paulmillr.com) */
 
 /*! scure-base - MIT License (c) 2022 Paul Miller (paulmillr.com) */
