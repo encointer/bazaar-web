@@ -28,8 +28,8 @@ describe('node-api', () => {
 
   describe('rpc', () => {
     it('communities.GetAll should return empty vec', async () => {
-      const result = await api.rpc.communities.getAll();
-      // console.log(result);
+      // @ts-ignore
+      const result = await api.rpc.encointer.getAllCommunities();
       expect(result.length).toBe(0);
     });
     it('communities.getLocations should return error on unknown community', async () => {
@@ -37,7 +37,7 @@ describe('node-api', () => {
 
       try {
         // @ts-ignore
-        await api.rpc.communities.getLocations(cid);
+        await api.rpc.encointer.getLocations(cid);
       } catch (e) {
         expect(e.toString()).toBe("Error: 3: Offchain storage not found: Key [99, 105, 100, 115, 103, 98, 115, 117, 118, 255, 255, 255, 255]");
       }
@@ -48,9 +48,10 @@ describe('node-api', () => {
       const cid = api.createType('CommunityIdentifier', {
         geohash: [0x00, 0x00, 0x00, 0x00, 0x00],
         digest: [0x00, 0x00, 0x00, 0x00]
-      }); // @ts-ignore
+      });
 
-      const result = await api.rpc.bazaar.getBusinesses(cid.toHex()); // console.log(result);
+      // @ts-ignore
+      const result = await api.rpc.encointer.bazaarGetBusinesses(cid.toHex());
 
       expect(result.length).toBe(0);
     });
@@ -58,7 +59,8 @@ describe('node-api', () => {
       // random cid
       let cid = communityIdentifierFromString(api.registry, "gbsuv7YXq9G"); // @ts-ignore
 
-      const result = await api.rpc.bazaar.getOfferings(cid); // console.log(result);
+      // @ts-ignore
+      const result = await api.rpc.encointer.bazaarGetOfferings(cid);
 
       expect(result.length).toBe(0);
     });
@@ -68,9 +70,10 @@ describe('node-api', () => {
       const alice = keyring.addFromUri('//Alice', {
         name: 'Alice default'
       });
-      const bid = api.createType('BusinessIdentifier', [cid, alice.publicKey]); // @ts-ignore
+      const bid = api.createType('BusinessIdentifier', [cid, alice.publicKey]);
 
-      const result = await api.rpc.bazaar.getOfferingsForBusiness(bid); // console.log(result);
+      // @ts-ignore
+      const result = await api.rpc.encointer.bazaarGetOfferingsForBusiness(bid);
 
       expect(result.length).toBe(0);
     });
