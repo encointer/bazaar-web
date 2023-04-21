@@ -57,7 +57,7 @@ function App() {
     const getBusinessesCids = async (cid: string) => {
         if (await connect()) {
             try {
-                const businessesList = await api.rpc.bazaar.getBusinesses(cid);
+                const businessesList = await api.rpc.encointer.bazaarGetBusinesses(cid);
                 // console.log("businesses from rpc call:", businessesList);
                 let businessUrls: string[] = [];
                 if (businessesList.length > 0) {
@@ -73,7 +73,7 @@ function App() {
     const getOfferingsCids = async (cid: string) => {
         if (await connect()) {
             try {
-                const offeringsList = await api.rpc.bazaar.getOfferings(cid);
+                const offeringsList = await api.rpc.encointer.bazaarGetOfferings(cid);
                 // console.log("offerings from rpc call:", offeringsList);
                 let offeringsUrls: string[] = [];
                 if (offeringsList.length > 0) {
@@ -154,7 +154,7 @@ function App() {
             const alice = keyring.addFromUri('//Alice', {name: 'Alice default'})
             const bid = api.createType('BusinessIdentifier', [cid, alice.publicKey]);
             try {
-                return await api.rpc.bazaar.getOfferingsForBusiness(bid);
+                return await api.rpc.encointer.bazaarGetOfferingsForBusiness(bid);
             } catch (e: any) {
                 console.log(e);
             }
@@ -165,7 +165,7 @@ function App() {
         if (!(process.env.REACT_APP_MOCKING === "enabled")) {
             if (await connect()) {
                 try {
-                    const communitiesArray: Community[] = await api.rpc.communities.getAll();
+                    const communitiesArray: Community[] = await api.rpc.encointer.getAllCommunities();
                     setCommunities((oldArray: Community[]) => ([...oldArray, ...communitiesArray]));
                 } catch (e: any) {
                     console.log(e);
