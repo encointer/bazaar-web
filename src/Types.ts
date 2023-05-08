@@ -6,16 +6,22 @@ export interface BusinessData {
 export interface Business {
     name: string,
     description: string,
-    image_cid: string,
-    image: string,
+    logo: string,
+}
+
+
+export interface ItemOffered {
+    name: string,
+	description: string,
+	category: string,
+	image: string,
+	itemCondition: string
 }
 
 export interface Offering {
-    name: string,
     price: number,
     community: string,
-    image_cid: string,
-    image: string,
+    itemOffered: ItemOffered,
 }
 
 export interface OfferingData {
