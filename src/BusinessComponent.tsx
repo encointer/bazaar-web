@@ -2,6 +2,7 @@ import { Business } from "./Types";
 import { resolveIpfs } from "./ipfs";
 
 export function BusinessComponent(props: { business: Business }) {
+    console.log(props.business)
     return (
         <ul>
             <li>
