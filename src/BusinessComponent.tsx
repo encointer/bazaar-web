@@ -6,13 +6,13 @@ export function BusinessComponent(props: { business: Business }) {
     return (
         <ul>
             <li>
-                Name: {props.business.name}
-                <p> Description: {props.business.description} </p>
+                Name: {props.business?.name}
+                <p> Description: {props.business?.description} </p>
             </li>
             <img
                 alt="business icon"
                 style= {{width: "30vw"}}
-                src={resolveIpfs(props.business["logo"])}
+                src={resolveIpfs(props.business?.["logo"])}
             />
         </ul>
     );
