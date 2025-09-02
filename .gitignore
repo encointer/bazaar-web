@@ -18,9 +18,6 @@
 .env.test.local
 .env.production.local
 
-# Yarn 3 Zero-Install
-.yarn/*
-
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
