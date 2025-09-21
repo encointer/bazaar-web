@@ -1,4 +1,4 @@
-import {options} from "@encointer/node-api/options";
+import {options as encointerOptions} from "@encointer/node-api/options";
 import {localChain, remoteChain} from "../settings";
 import {CommunityDisplay, OfferingData} from "../Types";
 import {decodeByteArrayString} from "../helpers";
@@ -6,6 +6,8 @@ import {getBusinesses} from "@encointer/node-api";
 import {ApiPromise, WsProvider} from "@polkadot/api";
 import {Business, CidName, CommunityIdentifier} from "@encointer/types";
 import {communityIdentifierToString} from "@encointer/util";
+import type { ApiOptions } from "@polkadot/api/types";
+import type { ProviderInterface } from "@polkadot/rpc-provider/types";
 
 let apiPromise: Promise<ApiPromise> | null = null;
 
@@ -22,15 +24,16 @@ function getChainWsUrl(): string {
 async function getApi(): Promise<ApiPromise> {
     if (!apiPromise) {
         const provider = new WsProvider(getChainWsUrl());
-        // @ts-ignore
-        apiPromise = ApiPromise.create({
-            ...options(),
-            provider,
-        }).catch(async (err) => {
+        const apiOpts: ApiOptions = {
+            provider: provider as ProviderInterface,
+            // encointerOptions returns a set of ApiOptions-compatible fields (types, rpc, bundles, etc.)
+            // We spread it into a concrete ApiOptions object.
+            ...(encointerOptions() as Partial<ApiOptions>),
+        };
+        apiPromise = ApiPromise.create(apiOpts).catch(async (err) => {
             try {
                 await provider.disconnect();
-            } catch (_) {
-            }
+            } catch (_) {}
             apiPromise = null;
             throw err;
         });
@@ -50,7 +53,7 @@ export async function fetchAllCommunities(): Promise<CommunityDisplay[]> {
     }));
 }
 
-export async function fetchBusinessCids(cid: CommunityIdentifier): Promise<string[]> {
+export async function fetchBusinessIpfsCids(cid: CommunityIdentifier): Promise<string[]> {
     const api = await getApi();
     try {
         // @ts-ignore
@@ -66,7 +69,7 @@ export async function fetchBusinessCids(cid: CommunityIdentifier): Promise<strin
     }
 }
 
-export async function fetchOfferingCids(cid: CommunityIdentifier): Promise<string[]> {
+export async function fetchOfferingIpfsCids(cid: CommunityIdentifier): Promise<string[]> {
     const api = await getApi();
     try {
         // @ts-ignore

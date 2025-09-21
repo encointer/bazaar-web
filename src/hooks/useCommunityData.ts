@@ -1,6 +1,6 @@
 import {useEffect, useState} from "react";
 import {BusinessDisplay, CommunityDisplay, Offering} from "../Types";
-import {fetchBusinessCids, fetchOfferingCids} from "../services/encointerApi";
+import {fetchBusinessIpfsCids, fetchOfferingIpfsCids} from "../services/encointerApi";
 import {loadJsonFromIpfs} from "../ipfs";
 
 export function useCommunityData(community?: CommunityDisplay) {
@@ -19,8 +19,8 @@ export function useCommunityData(community?: CommunityDisplay) {
         setError(null);
         try {
             const [businessCids, offeringCids] = await Promise.all([
-                fetchBusinessCids(community!.cid),
-                fetchOfferingCids(community!.cid),
+                fetchBusinessIpfsCids(community!.cid),
+                fetchOfferingIpfsCids(community!.cid),
             ]);
 
             const businessesData: BusinessDisplay[] = [];
