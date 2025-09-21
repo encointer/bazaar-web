@@ -1,11 +1,10 @@
-import {useEffect, useState} from "react";
+import React, {useEffect, useState} from "react";
 // import logo from './logo.svg';
 import "./App.css";
 import {ApiPromise, WsProvider} from "@polkadot/api";
 import {options} from "@encointer/node-api/options";
 import {
-    Business,
-    BusinessData,
+    BusinessDisplay,
     Offering,
     OfferingData,
 } from "./Types";
@@ -13,7 +12,7 @@ import {localChain, remoteChain} from "./settings";
 import {BusinessComponent} from "./BusinessComponent";
 import {OfferingComponent} from "./OfferingComponent";
 import {loadJsonFromIpfs} from "./ipfs";
-import {CidName, CommunityIdentifier} from "@encointer/types";
+import {CidName, CommunityIdentifier, Business} from "@encointer/types";
 import {communityIdentifierFromString, communityIdentifierToString} from "@encointer/util";
 import {decodeByteArrayString} from "./helpers";
 
@@ -36,7 +35,7 @@ if (process.env['REACT_APP_LOCAL'] === "enabled") {
 }
 
 function App() {
-    const [businesses, setBusinesses] = useState<Business[]>([]);
+    const [businessesDisplay, setBusinessesDisplay] = useState<BusinessDisplay[]>([]);
     const [offerings, setOfferings] = useState<Offering[]>([]);
     const [communities, setCommunities] = useState<CidName[]>([]);
     const [chosenCommunity, setChosenCommunity] = useState<string | undefined>(undefined);
@@ -59,18 +58,18 @@ function App() {
     };
     connect();
 
-    const getBusinessesCids = async (cid: CommunityIdentifier) => {
+    const getBusinessesUrl = async (cid: CommunityIdentifier) => {
         await connect()
         try {
-            const businessesList =
+            const businesses =
                 await api.rpc.encointer.bazaarGetBusinesses(cid);
-            console.log("businesses from rpc call:", businessesList);
+            console.log("businesses from rpc call:", JSON.stringify(businesses));
+
             let businessUrls: string[] = [];
-            if (businessesList.length > 0) {
-                businessUrls = businessesList.map((e: BusinessData) =>
-                    e["url"].toString()
-                );
-            }
+            businessUrls = businesses.map((business: Business) =>
+                business.business_data.url.toString()
+            );
+
             return businessUrls;
         } catch (e) {
             console.log(e);
@@ -118,13 +117,13 @@ function App() {
         });
 
     const setBusinessesFromCids = async (cids: string[]) => {
-        let businesses: Business[] = [];
+        let businesses: BusinessDisplay[] = [];
         for (const cid of cids) {
-            let business: Business = await loadJsonFromIpfs(cid);
+            let business: BusinessDisplay = await loadJsonFromIpfs(cid);
             console.log(business);
             businesses.push(business);
         }
-        setBusinesses((oldArray) => [...oldArray, ...businesses]);
+        setBusinessesDisplay((oldArray) => [...oldArray, ...businesses]);
     };
 
     const setOfferingsFromCids = async (cids: string[]) => {
@@ -139,8 +138,8 @@ function App() {
     };
 
     useEffect(() => {
-        console.log("state of businesses is: ", businesses);
-    }, [businesses]);
+        console.log("state of businesses is: ", businessesDisplay);
+    }, [businessesDisplay]);
 
     // const getOfferingsForBusiness = async (cid: string) => {
     //     await connect()
@@ -177,7 +176,7 @@ function App() {
     };
 
     function handleChange(e: React.ChangeEvent<HTMLSelectElement>) {
-        setBusinesses(() => []);
+        setBusinessesDisplay(() => []);
         setOfferings(() => []);
 
         const cidString = e.target.value;
@@ -185,7 +184,7 @@ function App() {
 
         let cid = communityIdentifierFromString(api.registry, cidString)
 
-        getBusinessesCids(cid).then((business_cids) => {
+        getBusinessesUrl(cid).then((business_cids) => {
             if (business_cids) {
                 // console.log("business_cids:", business_cids);
                 setBusinessesFromCids(business_cids)
@@ -218,10 +217,10 @@ function App() {
             ) : (
                 <div>no communities</div>
             )}
-            {businesses ? (
+            {businessesDisplay ? (
                 <div>
                     <h2>Businesses</h2>
-                    {businesses.map((business, i) => (
+                    {businessesDisplay.map((business, i) => (
                         <div key={i}>
                             <BusinessComponent business={business}/>
                         </div>

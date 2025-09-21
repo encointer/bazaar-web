@@ -1,14 +1,8 @@
-export interface BusinessData {
-    url: string,
-    oid: number,
-}
-
-export interface Business {
+export interface BusinessDisplay {
     name: string,
     description: string,
     logo: string,
 }
-
 
 export interface ItemOffered {
     name: string,
