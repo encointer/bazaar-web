@@ -20,7 +20,9 @@
     "web-vitals": "^2.1.4"
   },
   "devDependencies": {
-    "@polkadot/dev": "^0.83.3"
+    "@polkadot/dev": "^0.83.3",
+    "@polkadot/x-textdecoder": "^13.5.4",
+    "@polkadot/x-textencoder": "^13.5.4"
   },
   "scripts": {
     "start": "react-scripts start",
@@ -49,6 +51,11 @@
       "last 1 chrome version",
       "last 1 firefox version",
       "last 1 safari version"
+    ]
+  },
+  "jest": {
+    "transformIgnorePatterns": [
+      "node_modules/(?!(?:@polkadot|@encointer)/)"
     ]
   }
 }

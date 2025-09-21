@@ -6,12 +6,12 @@ import { CommunityIdentifier } from '@encointer/types';
 describe('node-api', () => {
   let keyring: Keyring;
   let api: any;
-  const chain = 'ws://127.0.0.1:9944';
+  const chain = 'wss://kusama.api.encointer.org';
   let testCid: CommunityIdentifier;
   beforeAll(async () => {
     // jest.setTimeout(90000);
     keyring = new Keyring({ type: 'sr25519' });
-    const provider = new WsProvider('ws://127.0.0.1:9944');
+    const provider = new WsProvider(chain);
     try {
       api = await ApiPromise.create({
         ...options(),
