@@ -108,7 +108,7 @@ function App() {
         communities.map((community, i) => {
             // console.log("a community from communities_state:", community);
             return (
-                <option key={i} value={community.toString()}>
+                <option key={i} value={community.cid}>
                     {" "}
                     {community.name}
                 </option>
@@ -178,20 +178,21 @@ function App() {
 
     };
 
-    function handleChange(e: any) {
+    function handleChange(e: React.ChangeEvent<HTMLSelectElement>) {
         setBusinesses(() => []);
         setOfferings(() => []);
 
-        let targetCommunity = JSON.parse(e.target.value);
-        setChosenCommunity((targetCommunity) => targetCommunity);
-        getBusinessesCids(targetCommunity["cid"]).then((business_cids) => {
+        const cid = e.target.value;
+        setChosenCommunity(cid);
+
+        getBusinessesCids(cid).then((business_cids) => {
             if (business_cids) {
                 // console.log("business_cids:", business_cids);
                 setBusinessesFromCids(business_cids)
                     .catch(console.error);
             }
         });
-        getOfferingsCids(targetCommunity["cid"]).then((offering_cids) => {
+        getOfferingsCids(cid).then((offering_cids) => {
             if (offering_cids) {
                 // console.log("offering_cids:", offering_cids);
                 setOfferingsFromCids(offering_cids)
