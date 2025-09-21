@@ -16,13 +16,22 @@
     "react-dom": "^17.0.2",
     "react-scripts": "5.0.0",
     "semantic-ui-react": "^2.1.2",
-    "typescript": "^4.5.5",
+    "typescript": "^5.9.2",
     "web-vitals": "^2.1.4"
+  },
+  "devDependencies": {
+    "@polkadot/dev": "^0.83.3",
+    "@polkadot/types": "^16.4.3",
+    "@types/jest": "^30.0.0",
+    "jest": "^30.1.3",
+    "jest-ts-webcompat-resolver": "^1.0.1",
+    "ts-jest": "^29.4.4",
+    "ts-node": "^10.9.2"
   },
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",
-    "test": "react-scripts test --transformIgnorePatterns \"node_modules/(?!@polkadot/api/allow-react)/\" --env=jsdom",
+    "test": "ts-node node_modules/jest/bin/jest.js",
     "local": "REACT_APP_LOCAL=enabled yarn start",
     "local:mock": "REACT_APP_LOCAL=enabled REACT_APP_MOCKING=enabled yarn start",
     "local-chain-remote-ipfs": "REACT_APP_LOCAL_CHAIN_REMOTE_IPFS=enabled yarn start",

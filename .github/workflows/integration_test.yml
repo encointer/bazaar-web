@@ -17,8 +17,5 @@ jobs:
       - name: Run yarn install
         run: yarn install
 
-      - name: Run encointer-node
-        run: ./scripts/docker_run_encointer_node_notee.sh &
-
       - name: Run integration tests
         run: yarn test

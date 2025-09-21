@@ -1,8 +1,8 @@
-import { useEffect, useState } from "react";
+import {useEffect, useState} from "react";
 // import logo from './logo.svg';
 import "./App.css";
-import { ApiPromise, Keyring, WsProvider } from "@polkadot/api";
-import { options } from "@encointer/node-api/options";
+import {ApiPromise, WsProvider} from "@polkadot/api";
+import {options} from "@encointer/node-api/options";
 import {
     Business,
     BusinessData,
@@ -10,21 +10,21 @@ import {
     Offering,
     OfferingData,
 } from "./Types";
-import { localChain, remoteChain } from "./settings";
-import { BusinessComponent } from "./BusinessComponent";
-import { OfferingComponent } from "./OfferingComponent";
-import { loadJsonFromIpfs } from "./ipfs";
+import {localChain, remoteChain} from "./settings";
+import {BusinessComponent} from "./BusinessComponent";
+import {OfferingComponent} from "./OfferingComponent";
+import {loadJsonFromIpfs} from "./ipfs";
 
 let api: any;
-let keyring: Keyring;
+// let keyring: Keyring;
 let chain: string;
-if (process.env.REACT_APP_MOCKING === "enabled") {
+if (process.env['REACT_APP_MOCKING'] === "enabled") {
     console.log("Mocking enabled");
 }
-if (process.env.REACT_APP_LOCAL === "enabled") {
+if (process.env['REACT_APP_LOCAL'] === "enabled") {
     console.log("local mode (ipfs & gesell)");
     chain = localChain;
-} else if (process.env.REACT_APP_LOCAL_CHAIN_REMOTE_IPFS === "enabled") {
+} else if (process.env['REACT_APP_LOCAL_CHAIN_REMOTE_IPFS'] === "enabled") {
     console.log("local mode chain and remote ipfs");
     chain = localChain;
 } else {
@@ -37,17 +37,18 @@ function App() {
     const [offerings, setOfferings] = useState<Offering[]>([]);
     const [communities, setCommunities] = useState<Community[]>([]);
     const [chosenCommunity, setChosenCommunity] = useState();
+
+
     const connect = async () => {
-        // let api: ApiPromise;
-        keyring = new Keyring({ type: "sr25519" });
+        // keyring = new Keyring({type: "sr25519"});
         const provider = new WsProvider(chain);
         try {
+            // @ts-ignore
             api = await ApiPromise.create({
                 ...options(),
                 provider: provider,
             });
             console.log(`${chain} wss connected success`);
-            return true;
         } catch (err) {
             console.log(`connect ${chain} failed`);
             await provider.disconnect();
@@ -56,40 +57,42 @@ function App() {
     connect();
 
     const getBusinessesCids = async (cid: string) => {
-        if (await connect()) {
-            try {
-                const businessesList =
-                    await api.rpc.encointer.bazaarGetBusinesses(cid);
-                // console.log("businesses from rpc call:", businessesList);
-                let businessUrls: string[] = [];
-                if (businessesList.length > 0) {
-                    businessUrls = businessesList.map((e: BusinessData) =>
-                        e["url"].toString()
-                    );
-                }
-                return businessUrls;
-            } catch (e) {
-                console.log(e);
+        await connect()
+        try {
+            const businessesList =
+                await api.rpc.encointer.bazaarGetBusinesses(cid);
+            // console.log("businesses from rpc call:", businessesList);
+            let businessUrls: string[] = [];
+            if (businessesList.length > 0) {
+                businessUrls = businessesList.map((e: BusinessData) =>
+                    e["url"].toString()
+                );
             }
+            return businessUrls;
+        } catch (e) {
+            console.log(e);
+            return [];
         }
+
     };
 
     const getOfferingsCids = async (cid: string) => {
-        if (await connect()) {
-            try {
-                const offeringsList =
-                    await api.rpc.encointer.bazaarGetOfferings(cid);
-                // console.log("offerings from rpc call:", offeringsList);
-                let offeringsUrls: string[] = [];
-                if (offeringsList.length > 0) {
-                    offeringsUrls = offeringsList.map((e: OfferingData) =>
-                        e["url"].toString()
-                    );
-                }
-                return offeringsUrls;
-            } catch (e) {
-                console.log(e);
+        await connect()
+
+        try {
+            const offeringsList =
+                await api.rpc.encointer.bazaarGetOfferings(cid);
+            // console.log("offerings from rpc call:", offeringsList);
+            let offeringsUrls: string[] = [];
+            if (offeringsList.length > 0) {
+                offeringsUrls = offeringsList.map((e: OfferingData) =>
+                    e["url"].toString()
+                );
             }
+            return offeringsUrls;
+        } catch (e) {
+            console.log(e);
+            return [];
         }
     };
 
@@ -135,39 +138,37 @@ function App() {
         console.log("state of businesses is: ", businesses);
     }, [businesses]);
 
-    // eslint-disable-next-line
-    const getOfferingsForBusiness = async (cid: string) => {
-        if (await connect()) {
-            const alice = keyring.addFromUri("//Alice", {
-                name: "Alice default",
-            });
-            const bid = api.createType("BusinessIdentifier", [
-                cid,
-                alice.publicKey,
-            ]);
-            try {
-                return await api.rpc.encointer.bazaarGetOfferingsForBusiness(
-                    bid
-                );
-            } catch (e: any) {
-                console.log(e);
-            }
-        }
-    };
+    // const getOfferingsForBusiness = async (cid: string) => {
+    //     await connect()
+    //     const alice = keyring.addFromUri("//Alice", {
+    //         name: "Alice default",
+    //     });
+    //     const bid = api.createType("BusinessIdentifier", [
+    //         cid,
+    //         alice.publicKey,
+    //     ]);
+    //     try {
+    //         return await api.rpc.encointer.bazaarGetOfferingsForBusiness(
+    //             bid
+    //         );
+    //     } catch (e: any) {
+    //         console.log(e);
+    //     }
+    // };
 
     const getAllCommunities = async () => {
-        if (await connect()) {
-            try {
-                const communitiesArray: Community[] =
-                    await api.rpc.encointer.getAllCommunities();
-                setCommunities((oldArray: Community[]) => [
-                    ...oldArray,
-                    ...communitiesArray,
-                ]);
-            } catch (e: any) {
-                console.log(e);
-            }
+        await connect()
+        try {
+            const communitiesArray: Community[] =
+                await api.rpc.encointer.getAllCommunities();
+            setCommunities((oldArray: Community[]) => [
+                ...oldArray,
+                ...communitiesArray,
+            ]);
+        } catch (e: any) {
+            console.log(e);
         }
+
     };
 
     function handleChange(e: any) {
@@ -177,27 +178,17 @@ function App() {
         let targetCommunity = JSON.parse(e.target.value);
         setChosenCommunity((targetCommunity) => targetCommunity);
         getBusinessesCids(targetCommunity["cid"]).then((business_cids) => {
-            let unsubscribeAll: any = null;
             if (business_cids) {
                 // console.log("business_cids:", business_cids);
                 setBusinessesFromCids(business_cids)
-                    .then((unsub) => {
-                        unsubscribeAll = unsub;
-                    })
                     .catch(console.error);
-                return () => unsubscribeAll && unsubscribeAll();
             }
         });
         getOfferingsCids(targetCommunity["cid"]).then((offering_cids) => {
-            let unsubscribeAll: any = null;
             if (offering_cids) {
                 // console.log("offering_cids:", offering_cids);
                 setOfferingsFromCids(offering_cids)
-                    .then((unsub) => {
-                        unsubscribeAll = unsub;
-                    })
                     .catch(console.error);
-                return () => unsubscribeAll && unsubscribeAll();
             }
         });
     }
@@ -224,7 +215,7 @@ function App() {
                     <h2>Businesses</h2>
                     {businesses.map((business, i) => (
                         <div key={i}>
-                            <BusinessComponent business={business} />
+                            <BusinessComponent business={business}/>
                         </div>
                     ))}
                 </div>
@@ -236,7 +227,7 @@ function App() {
                     <h2>Offerings</h2>
                     {offerings.map((offering, i) => (
                         <div key={i}>
-                            <OfferingComponent offering={offering} />
+                            <OfferingComponent offering={offering}/>
                         </div>
                     ))}
                 </div>
