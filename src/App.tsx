@@ -2,23 +2,22 @@ import {useEffect, useState} from "react";
 import "./App.css";
 import {BusinessComponent} from "./BusinessComponent";
 import {OfferingComponent} from "./OfferingComponent";
-// ... existing code removed: direct api usage, options, settings, helpers, ipfs
-import {CidDisplay} from "./Types";
+import {CommunityDisplay, CidDisplay} from "./Types";
 import {useCommunities} from "./hooks/useCommunities";
 import {useCommunityData} from "./hooks/useCommunityData";
 import {CommunitySelect} from "./components/CommunitySelect";
 
 function App() {
-    const {communities, loading: communitiesLoading, error: communitiesError} = useCommunities();
-    const [selectedCid, setSelectedCid] = useState<CidDisplay | "">("");
+    const { communities, loading: communitiesLoading, error: communitiesError } = useCommunities();
+    const [selectedCommunity, setSelectedCommunity] = useState<CommunityDisplay | null>(null);
 
-    const {businesses, offerings, loading: dataLoading, error: dataError} =
-        useCommunityData(selectedCid || undefined);
+    const { businesses, offerings, loading: dataLoading, error: dataError } =
+        useCommunityData(selectedCommunity ?? undefined);
 
     // Optional: reload when selectedCid changes is handled inside hook,
     // this effect is not needed unless you want side-effects here.
     useEffect(() => {
-    }, [selectedCid]);
+    }, [selectedCommunity]);
 
     return (
         <div className="App">
@@ -30,8 +29,15 @@ function App() {
             {!communitiesLoading && (
                 <CommunitySelect
                     communities={communities}
-                    value={selectedCid}
-                    onChange={setSelectedCid}
+                    value={selectedCommunity?.cidDisplay ?? ""}
+                    onChange={(cidDisp: CidDisplay | "") => {
+                        if (cidDisp === "") {
+                            setSelectedCommunity(null);
+                        } else {
+                            const found = communities.find(c => c.cidDisplay === cidDisp) || null;
+                            setSelectedCommunity(found);
+                        }
+                    }}
                 />
             )}
 

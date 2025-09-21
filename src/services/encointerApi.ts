@@ -1,8 +1,11 @@
-import {ApiPromise, WsProvider} from "@polkadot/api";
 import {options} from "@encointer/node-api/options";
 import {localChain, remoteChain} from "../settings";
-import {BusinessData, Community, CommunityIdentifier, OfferingData} from "../Types";
+import {CommunityDisplay, OfferingData} from "../Types";
 import {decodeByteArrayString} from "../helpers";
+import {getBusinesses} from "@encointer/node-api";
+import {ApiPromise, WsProvider} from "@polkadot/api";
+import {Business, CidName, CommunityIdentifier} from "@encointer/types";
+import {communityIdentifierToString} from "@encointer/util";
 
 let apiPromise: Promise<ApiPromise> | null = null;
 
@@ -26,7 +29,8 @@ async function getApi(): Promise<ApiPromise> {
         }).catch(async (err) => {
             try {
                 await provider.disconnect();
-            } catch (_) {}
+            } catch (_) {
+            }
             apiPromise = null;
             throw err;
         });
@@ -34,21 +38,27 @@ async function getApi(): Promise<ApiPromise> {
     return apiPromise;
 }
 
-export async function fetchAllCommunities(): Promise<Community[]> {
+export async function fetchAllCommunities(): Promise<CommunityDisplay[]> {
     const api = await getApi();
-    const communitiesArray: Community[] = await api.rpc.encointer.getAllCommunities();
+
+    // @ts-ignore
+    const communitiesArray: CidName[] = await api.rpc.encointer.getAllCommunities();
     return communitiesArray.map((c) => ({
-        ...c,
-        name: decodeByteArrayString(c.name),
+        cidDisplay: communityIdentifierToString(c.cid).toString(),
+        cid: c.cid,
+        name: decodeByteArrayString(c.name.toString()),
     }));
 }
 
 export async function fetchBusinessCids(cid: CommunityIdentifier): Promise<string[]> {
     const api = await getApi();
     try {
-        const businessesList = await api.rpc.encointer.bazaarGetBusinesses(cid);
+        // @ts-ignore
+        const businessesList = await getBusinesses(api, cid);
         return (businessesList.length > 0)
-            ? businessesList.map((e: BusinessData) => e.url.toString())
+            ? businessesList.map((business: Business) =>
+                business.businessData.url.toHuman()
+            )
             : [];
     } catch (e) {
         console.error(e);
@@ -59,6 +69,7 @@ export async function fetchBusinessCids(cid: CommunityIdentifier): Promise<strin
 export async function fetchOfferingCids(cid: CommunityIdentifier): Promise<string[]> {
     const api = await getApi();
     try {
+        // @ts-ignore
         const offeringsList = await api.rpc.encointer.bazaarGetOfferings(cid);
         return (offeringsList.length > 0)
             ? offeringsList.map((e: OfferingData) => e.url.toString())

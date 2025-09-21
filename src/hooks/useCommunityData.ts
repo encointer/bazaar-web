@@ -1,16 +1,16 @@
 import {useEffect, useState} from "react";
-import {BusinessDisplay, CidDisplay, Offering} from "../Types";
+import {BusinessDisplay, CommunityDisplay, Offering} from "../Types";
 import {fetchBusinessCids, fetchOfferingCids} from "../services/encointerApi";
 import {loadJsonFromIpfs} from "../ipfs";
 
-export function useCommunityData(cid?: CidDisplay) {
+export function useCommunityData(community?: CommunityDisplay) {
     const [businesses, setBusinesses] = useState<BusinessDisplay[]>([]);
     const [offerings, setOfferings] = useState<Offering[]>([]);
     const [loading, setLoading] = useState<boolean>(false);
     const [error, setError] = useState<unknown>(null);
 
     const load = async () => {
-        if (!cid) {
+        if (!community) {
             setBusinesses([]);
             setOfferings([]);
             return;
@@ -19,8 +19,8 @@ export function useCommunityData(cid?: CidDisplay) {
         setError(null);
         try {
             const [businessCids, offeringCids] = await Promise.all([
-                fetchBusinessCids(cid),
-                fetchOfferingCids(cid),
+                fetchBusinessCids(community!.cid),
+                fetchOfferingCids(community!.cid),
             ]);
 
             const businessesData: BusinessDisplay[] = [];
@@ -52,8 +52,7 @@ export function useCommunityData(cid?: CidDisplay) {
             await load();
         })();
         return () => { cancelled = true; };
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [cid]);
+    }, [community]);
 
     return { businesses, offerings, loading, error, reload: load };
 }

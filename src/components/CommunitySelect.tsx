@@ -16,7 +16,7 @@ export const CommunitySelect: React.FC<Props> = ({ communities, value, onChange 
             >
                 <option value="" disabled>choose a community</option>
                 {communities.map((community, i) => (
-                    <option key={i} value={community.cid}>
+                    <option key={i} value={community.cidDisplay}>
                         {community.name}
                     </option>
                 ))}
