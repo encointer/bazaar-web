@@ -27,8 +27,3 @@ export interface Offering {
 export interface OfferingData {
     url: string,
 }
-
-export interface Community {
-    name: string,
-    cid: string,
-}

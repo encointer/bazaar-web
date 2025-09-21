@@ -6,7 +6,6 @@ import {options} from "@encointer/node-api/options";
 import {
     Business,
     BusinessData,
-    Community,
     Offering,
     OfferingData,
 } from "./Types";
@@ -14,6 +13,8 @@ import {localChain, remoteChain} from "./settings";
 import {BusinessComponent} from "./BusinessComponent";
 import {OfferingComponent} from "./OfferingComponent";
 import {loadJsonFromIpfs} from "./ipfs";
+import {CidName, CommunityIdentifier} from "@encointer/types";
+import {communityIdentifierFromString, communityIdentifierToString} from "@encointer/util";
 import {decodeByteArrayString} from "./helpers";
 
 
@@ -37,7 +38,7 @@ if (process.env['REACT_APP_LOCAL'] === "enabled") {
 function App() {
     const [businesses, setBusinesses] = useState<Business[]>([]);
     const [offerings, setOfferings] = useState<Offering[]>([]);
-    const [communities, setCommunities] = useState<Community[]>([]);
+    const [communities, setCommunities] = useState<CidName[]>([]);
     const [chosenCommunity, setChosenCommunity] = useState<string | undefined>(undefined);
 
 
@@ -58,12 +59,12 @@ function App() {
     };
     connect();
 
-    const getBusinessesCids = async (cid: string) => {
+    const getBusinessesCids = async (cid: CommunityIdentifier) => {
         await connect()
         try {
             const businessesList =
                 await api.rpc.encointer.bazaarGetBusinesses(cid);
-            // console.log("businesses from rpc call:", businessesList);
+            console.log("businesses from rpc call:", businessesList);
             let businessUrls: string[] = [];
             if (businessesList.length > 0) {
                 businessUrls = businessesList.map((e: BusinessData) =>
@@ -78,7 +79,7 @@ function App() {
 
     };
 
-    const getOfferingsCids = async (cid: string) => {
+    const getOfferingsCids = async (cid: CommunityIdentifier) => {
         await connect()
 
         try {
@@ -105,12 +106,13 @@ function App() {
 
     let communityList =
         communities.length > 0 &&
-        communities.map((community, i) => {
-            // console.log("a community from communities_state:", community);
+        communities.map((cidName, i) => {
+            let name = decodeByteArrayString(cidName.name.toString());
+
             return (
-                <option key={i} value={community.cid}>
+                <option key={i} value={communityIdentifierToString(cidName.cid).toString()}>
                     {" "}
-                    {community.name}
+                    {name}
                 </option>
             );
         });
@@ -161,16 +163,12 @@ function App() {
     const getAllCommunities = async () => {
         await connect()
         try {
-            const communitiesArray: Community[] =
+            const communitiesArray: CidName[] =
                 await api.rpc.encointer.getAllCommunities();
 
-            let comms = communitiesArray.map((community) => {
-                return { ...community, name: decodeByteArrayString(community.name) };
-            })
-
-            setCommunities((oldArray: Community[]) => [
+            setCommunities((oldArray: CidName[]) => [
                 ...oldArray,
-                ...comms,
+                ...communitiesArray,
             ]);
         } catch (e: any) {
             console.log(e);
@@ -182,8 +180,10 @@ function App() {
         setBusinesses(() => []);
         setOfferings(() => []);
 
-        const cid = e.target.value;
-        setChosenCommunity(cid);
+        const cidString = e.target.value;
+        setChosenCommunity(cidString);
+
+        let cid = communityIdentifierFromString(api.registry, cidString)
 
         getBusinessesCids(cid).then((business_cids) => {
             if (business_cids) {
