@@ -12,5 +12,8 @@
       "./node_modules/@polkadot/ts",
       "./node_modules/@types"
     ],
+    "compilerOptions": {
+      "verbatimModuleSyntax": false
+    }
   }
 }
