@@ -1,6 +1,6 @@
 import {ApiPromise, Keyring, WsProvider} from '@polkadot/api';
 import {options} from "@encointer/node-api/options";
-import { communityIdentifierFromString } from "@encointer/util/cidUtil.js";
+import {communityIdentifierFromString} from "@encointer/util";
 import { CommunityIdentifier } from '@encointer/types';
 
 describe('node-api', () => {
