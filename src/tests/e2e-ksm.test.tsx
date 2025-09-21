@@ -13,7 +13,8 @@ describe('node-api', () => {
     keyring = new Keyring({ type: 'sr25519' });
     const provider = new WsProvider(chain);
     try {
-      api = await ApiPromise.create({
+      // @ts-ignore
+        api = await ApiPromise.create({
         ...options(),
         provider: provider
       });
