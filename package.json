@@ -19,10 +19,13 @@
     "typescript": "^4.5.5",
     "web-vitals": "^2.1.4"
   },
+  "devDependencies": {
+    "@polkadot/dev": "^0.83.3"
+  },
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",
-    "test": "react-scripts test --transformIgnorePatterns \"node_modules/(?!@polkadot/api/allow-react)/\" --env=jsdom",
+    "test": "react-scripts test",
     "local": "REACT_APP_LOCAL=enabled yarn start",
     "local:mock": "REACT_APP_LOCAL=enabled REACT_APP_MOCKING=enabled yarn start",
     "local-chain-remote-ipfs": "REACT_APP_LOCAL_CHAIN_REMOTE_IPFS=enabled yarn start",
