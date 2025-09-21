@@ -38,7 +38,7 @@ function App() {
     const [businesses, setBusinesses] = useState<Business[]>([]);
     const [offerings, setOfferings] = useState<Offering[]>([]);
     const [communities, setCommunities] = useState<Community[]>([]);
-    const [chosenCommunity, setChosenCommunity] = useState();
+    const [chosenCommunity, setChosenCommunity] = useState<string | undefined>(undefined);
 
 
     const connect = async () => {
