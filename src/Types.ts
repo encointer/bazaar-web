@@ -4,6 +4,14 @@ export interface BusinessDisplay {
     logo: string,
 }
 
+// Nominal type for clarity and safety
+export type CidDisplay = string;
+
+export interface CommunityDisplay {
+    name: string,
+    cid: CidDisplay,
+}
+
 export interface ItemOffered {
     name: string,
 	description: string,
