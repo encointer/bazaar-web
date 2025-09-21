@@ -3,8 +3,8 @@
   "version": "0.2.0",
   "private": true,
   "dependencies": {
-    "@encointer/node-api": "^0.19.4-alpha.0",
-    "@encointer/util": "^0.19.4-alpha.0",
+    "@encointer/node-api": "^0.19.6-alpha.1",
+    "@encointer/util": "^0.19.6-alpha.1",
     "@testing-library/jest-dom": "^5.16.2",
     "@testing-library/react": "^12.1.3",
     "@testing-library/user-event": "^13.5.0",

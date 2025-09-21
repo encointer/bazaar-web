@@ -1,7 +1,7 @@
-import { Business } from "./Types";
+import { BusinessDisplay } from "./Types";
 import { resolveIpfs } from "./ipfs";
 
-export function BusinessComponent(props: { business: Business }) {
+export function BusinessComponent(props: { business: BusinessDisplay }) {
     console.log(props.business)
     return (
         <ul>

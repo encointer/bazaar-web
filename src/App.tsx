@@ -1,12 +1,10 @@
-import {useEffect, useState} from "react";
+import React, {useEffect, useState} from "react";
 // import logo from './logo.svg';
 import "./App.css";
 import {ApiPromise, WsProvider} from "@polkadot/api";
 import {options} from "@encointer/node-api/options";
 import {
-    Business,
-    BusinessData,
-    Community,
+    BusinessDisplay,
     Offering,
     OfferingData,
 } from "./Types";
@@ -14,6 +12,11 @@ import {localChain, remoteChain} from "./settings";
 import {BusinessComponent} from "./BusinessComponent";
 import {OfferingComponent} from "./OfferingComponent";
 import {loadJsonFromIpfs} from "./ipfs";
+import {CidName, CommunityIdentifier, Business} from "@encointer/types";
+import {communityIdentifierFromString, communityIdentifierToString} from "@encointer/util";
+import {decodeByteArrayString} from "./helpers";
+import { getBusinesses } from "@encointer/node-api";
+
 
 let api: any;
 // let keyring: Keyring;
@@ -33,10 +36,10 @@ if (process.env['REACT_APP_LOCAL'] === "enabled") {
 }
 
 function App() {
-    const [businesses, setBusinesses] = useState<Business[]>([]);
+    const [businessesDisplay, setBusinessesDisplay] = useState<BusinessDisplay[]>([]);
     const [offerings, setOfferings] = useState<Offering[]>([]);
-    const [communities, setCommunities] = useState<Community[]>([]);
-    const [chosenCommunity, setChosenCommunity] = useState();
+    const [communities, setCommunities] = useState<CidName[]>([]);
+    const [chosenCommunity, setChosenCommunity] = useState<string | undefined>(undefined);
 
 
     const connect = async () => {
@@ -56,18 +59,19 @@ function App() {
     };
     connect();
 
-    const getBusinessesCids = async (cid: string) => {
+    const getBusinessesUrl = async (cid: CommunityIdentifier) => {
         await connect()
         try {
-            const businessesList =
-                await api.rpc.encointer.bazaarGetBusinesses(cid);
-            // console.log("businesses from rpc call:", businessesList);
+            const businesses = await getBusinesses(api, cid);
+            console.log("businesses from rpc call:", JSON.stringify(businesses));
+
             let businessUrls: string[] = [];
-            if (businessesList.length > 0) {
-                businessUrls = businessesList.map((e: BusinessData) =>
-                    e["url"].toString()
-                );
-            }
+            businessUrls = businesses.map((business: Business) =>
+                business.businessData.url.toHuman()
+            );
+
+            console.log("businessUrls:", businessUrls);
+
             return businessUrls;
         } catch (e) {
             console.log(e);
@@ -76,7 +80,7 @@ function App() {
 
     };
 
-    const getOfferingsCids = async (cid: string) => {
+    const getOfferingsCids = async (cid: CommunityIdentifier) => {
         await connect()
 
         try {
@@ -103,24 +107,25 @@ function App() {
 
     let communityList =
         communities.length > 0 &&
-        communities.map((community, i) => {
-            // console.log("a community from communities_state:", community);
+        communities.map((cidName, i) => {
+            let name = decodeByteArrayString(cidName.name.toString());
+
             return (
-                <option key={i} value={community.toString()}>
+                <option key={i} value={communityIdentifierToString(cidName.cid).toString()}>
                     {" "}
-                    {community["name"]}
+                    {name}
                 </option>
             );
         });
 
     const setBusinessesFromCids = async (cids: string[]) => {
-        let businesses: Business[] = [];
+        let businesses: BusinessDisplay[] = [];
         for (const cid of cids) {
-            let business: Business = await loadJsonFromIpfs(cid);
+            let business: BusinessDisplay = await loadJsonFromIpfs(cid);
             console.log(business);
             businesses.push(business);
         }
-        setBusinesses((oldArray) => [...oldArray, ...businesses]);
+        setBusinessesDisplay((oldArray) => [...oldArray, ...businesses]);
     };
 
     const setOfferingsFromCids = async (cids: string[]) => {
@@ -135,8 +140,8 @@ function App() {
     };
 
     useEffect(() => {
-        console.log("state of businesses is: ", businesses);
-    }, [businesses]);
+        console.log("state of businesses is: ", businessesDisplay);
+    }, [businessesDisplay]);
 
     // const getOfferingsForBusiness = async (cid: string) => {
     //     await connect()
@@ -159,9 +164,10 @@ function App() {
     const getAllCommunities = async () => {
         await connect()
         try {
-            const communitiesArray: Community[] =
+            const communitiesArray: CidName[] =
                 await api.rpc.encointer.getAllCommunities();
-            setCommunities((oldArray: Community[]) => [
+
+            setCommunities((oldArray: CidName[]) => [
                 ...oldArray,
                 ...communitiesArray,
             ]);
@@ -171,20 +177,23 @@ function App() {
 
     };
 
-    function handleChange(e: any) {
-        setBusinesses(() => []);
+    function handleChange(e: React.ChangeEvent<HTMLSelectElement>) {
+        setBusinessesDisplay(() => []);
         setOfferings(() => []);
 
-        let targetCommunity = JSON.parse(e.target.value);
-        setChosenCommunity((targetCommunity) => targetCommunity);
-        getBusinessesCids(targetCommunity["cid"]).then((business_cids) => {
+        const cidString = e.target.value;
+        setChosenCommunity(cidString);
+
+        let cid = communityIdentifierFromString(api.registry, cidString)
+
+        getBusinessesUrl(cid).then((business_cids) => {
             if (business_cids) {
                 // console.log("business_cids:", business_cids);
                 setBusinessesFromCids(business_cids)
                     .catch(console.error);
             }
         });
-        getOfferingsCids(targetCommunity["cid"]).then((offering_cids) => {
+        getOfferingsCids(cid).then((offering_cids) => {
             if (offering_cids) {
                 // console.log("offering_cids:", offering_cids);
                 setOfferingsFromCids(offering_cids)
@@ -210,10 +219,10 @@ function App() {
             ) : (
                 <div>no communities</div>
             )}
-            {businesses ? (
+            {businessesDisplay ? (
                 <div>
                     <h2>Businesses</h2>
-                    {businesses.map((business, i) => (
+                    {businessesDisplay.map((business, i) => (
                         <div key={i}>
                             <BusinessComponent business={business}/>
                         </div>

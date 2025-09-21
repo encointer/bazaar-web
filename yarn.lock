@@ -1950,32 +1950,32 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@encointer/node-api@npm:^0.19.4-alpha.0":
-  version: 0.19.4-alpha.0
-  resolution: "@encointer/node-api@npm:0.19.4-alpha.0"
+"@encointer/node-api@npm:^0.19.6-alpha.1":
+  version: 0.19.6-alpha.1
+  resolution: "@encointer/node-api@npm:0.19.6-alpha.1"
   dependencies:
-    "@encointer/types": "npm:^0.19.4-alpha.0"
+    "@encointer/types": "npm:^0.19.6-alpha.1"
     "@polkadot/api": "npm:^16.4.3"
     tslib: "npm:^2.8.1"
-  checksum: 10c0/059f45402558deb1a68809b9524c413c4bdaca77d00647372bb0d2a88400bfbac46d62bed05c09e0b30accadad2ba9ce95a057e258eebdf5b0cc6a4bde1f7bff
+  checksum: 10c0/eac163101b7a0edbce0c06c3254efa1d59fce5b90f7afd9dc9da959a2e927e133a87872f22422e482e8aa3f805ea12294c01e78a35fe2712b87a85d7a737d6fe
   languageName: node
   linkType: hard
 
-"@encointer/types@npm:^0.19.4-alpha.0":
-  version: 0.19.4-alpha.0
-  resolution: "@encointer/types@npm:0.19.4-alpha.0"
+"@encointer/types@npm:^0.19.6-alpha.1":
+  version: 0.19.6-alpha.1
+  resolution: "@encointer/types@npm:0.19.6-alpha.1"
   dependencies:
     "@polkadot/api": "npm:^16.4.3"
     "@polkadot/types": "npm:^16.4.3"
     "@polkadot/types-codec": "npm:^16.4.3"
     "@polkadot/util": "npm:^13.5.4"
-  checksum: 10c0/b248278aca0220afdbc3d31475b96c8ea12ca05bd94f0235368b01ba45fcd23f87873cd0699f6e22d00136ffb503a8916ecdb4adca381454f04ed54d6acef5f5
+  checksum: 10c0/16c157493df1bb0e7bd7d9d163ebc1b36143f2a8b569cd946c77f8c21677f91a7daf9e9bf321448fe998946368c70e806d39f9fc063b236543be2bbc724fcbdf
   languageName: node
   linkType: hard
 
-"@encointer/util@npm:^0.19.4-alpha.0":
-  version: 0.19.4-alpha.0
-  resolution: "@encointer/util@npm:0.19.4-alpha.0"
+"@encointer/util@npm:^0.19.6-alpha.1":
+  version: 0.19.6-alpha.1
+  resolution: "@encointer/util@npm:0.19.6-alpha.1"
   dependencies:
     "@babel/runtime": "npm:^7.18.9"
     "@polkadot/util": "npm:^13.5.4"
@@ -1983,7 +1983,7 @@ __metadata:
     "@types/bn.js": "npm:^5.2.0"
     assert: "npm:^2.1.0"
     bn.js: "npm:^5.2.2"
-  checksum: 10c0/240c49989bb4df98fe4c73ac0f89f567d41a970ca4c500e8fb75025ec55701119794e02e9deb10d880cd15f0422c7cb328df13c00b287b4960874f4e07698be9
+  checksum: 10c0/ae292321da52b38d05e461130160c0d4f3cd05e8d47d41b291a0a463d8c1586482c61cbc8c161e8eed07fa8b9410cfc3ccc948bb8da892e259965b34e132e9cd
   languageName: node
   linkType: hard
 
@@ -6374,8 +6374,8 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "bazaar-web@workspace:."
   dependencies:
-    "@encointer/node-api": "npm:^0.19.4-alpha.0"
-    "@encointer/util": "npm:^0.19.4-alpha.0"
+    "@encointer/node-api": "npm:^0.19.6-alpha.1"
+    "@encointer/util": "npm:^0.19.6-alpha.1"
     "@polkadot/dev": "npm:^0.83.3"
     "@polkadot/types": "npm:^16.4.3"
     "@testing-library/jest-dom": "npm:^5.16.2"
