@@ -139,24 +139,23 @@ function App() {
         console.log("state of businesses is: ", businesses);
     }, [businesses]);
 
-    // @ts-ignore
-    const getOfferingsForBusiness = async (cid: string) => {
-        await connect()
-        const alice = keyring.addFromUri("//Alice", {
-            name: "Alice default",
-        });
-        const bid = api.createType("BusinessIdentifier", [
-            cid,
-            alice.publicKey,
-        ]);
-        try {
-            return await api.rpc.encointer.bazaarGetOfferingsForBusiness(
-                bid
-            );
-        } catch (e: any) {
-            console.log(e);
-        }
-    };
+    // const getOfferingsForBusiness = async (cid: string) => {
+    //     await connect()
+    //     const alice = keyring.addFromUri("//Alice", {
+    //         name: "Alice default",
+    //     });
+    //     const bid = api.createType("BusinessIdentifier", [
+    //         cid,
+    //         alice.publicKey,
+    //     ]);
+    //     try {
+    //         return await api.rpc.encointer.bazaarGetOfferingsForBusiness(
+    //             bid
+    //         );
+    //     } catch (e: any) {
+    //         console.log(e);
+    //     }
+    // };
 
     const getAllCommunities = async () => {
         await connect()
