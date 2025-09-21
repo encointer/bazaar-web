@@ -67,8 +67,10 @@ function App() {
 
             let businessUrls: string[] = [];
             businessUrls = businesses.map((business: Business) =>
-                business.businessData.url.toString()
+                business.businessData.url.toHuman()
             );
+
+            console.log("businessUrls:", businessUrls);
 
             return businessUrls;
         } catch (e) {
