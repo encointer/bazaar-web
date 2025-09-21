@@ -1,4 +1,4 @@
-import {useEffect, useState} from "react";
+import {useCallback, useEffect, useState} from "react";
 import {BusinessDisplay, CommunityDisplay, Offering} from "../Types";
 import {fetchBusinessIpfsCids, fetchOfferingIpfsCids} from "../services/encointerApi";
 import {loadJsonFromIpfs} from "../ipfs";
@@ -9,7 +9,7 @@ export function useCommunityData(community?: CommunityDisplay) {
     const [loading, setLoading] = useState<boolean>(false);
     const [error, setError] = useState<unknown>(null);
 
-    const load = async () => {
+    const load = useCallback(async () => {
         if (!community) {
             setBusinesses([]);
             setOfferings([]);
@@ -43,7 +43,7 @@ export function useCommunityData(community?: CommunityDisplay) {
         } finally {
             setLoading(false);
         }
-    };
+    }, [community]);
 
     useEffect(() => {
         let cancelled = false;
@@ -52,7 +52,7 @@ export function useCommunityData(community?: CommunityDisplay) {
             await load();
         })();
         return () => { cancelled = true; };
-    }, [community]);
+    }, [load]);
 
     return { businesses, offerings, loading, error, reload: load };
 }
