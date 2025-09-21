@@ -1,7 +1,18 @@
+import {CommunityIdentifier} from "@encointer/types";
+
 export interface BusinessDisplay {
     name: string,
     description: string,
     logo: string,
+}
+
+// Nominal type for clarity and safety
+export type CidDisplay = string;
+
+export interface CommunityDisplay {
+    name: string,
+    cidDisplay: CidDisplay,
+    cid: CommunityIdentifier,
 }
 
 export interface ItemOffered {
