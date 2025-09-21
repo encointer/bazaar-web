@@ -14,6 +14,8 @@ import {localChain, remoteChain} from "./settings";
 import {BusinessComponent} from "./BusinessComponent";
 import {OfferingComponent} from "./OfferingComponent";
 import {loadJsonFromIpfs} from "./ipfs";
+import {decodeByteArrayString} from "./helpers";
+
 
 let api: any;
 // let keyring: Keyring;
@@ -108,7 +110,7 @@ function App() {
             return (
                 <option key={i} value={community.toString()}>
                     {" "}
-                    {community["name"]}
+                    {community.name}
                 </option>
             );
         });
@@ -161,9 +163,14 @@ function App() {
         try {
             const communitiesArray: Community[] =
                 await api.rpc.encointer.getAllCommunities();
+
+            let comms = communitiesArray.map((community) => {
+                return { ...community, name: decodeByteArrayString(community.name) };
+            })
+
             setCommunities((oldArray: Community[]) => [
                 ...oldArray,
-                ...communitiesArray,
+                ...comms,
             ]);
         } catch (e: any) {
             console.log(e);
