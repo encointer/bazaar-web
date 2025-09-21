@@ -15,6 +15,7 @@ import {loadJsonFromIpfs} from "./ipfs";
 import {CidName, CommunityIdentifier, Business} from "@encointer/types";
 import {communityIdentifierFromString, communityIdentifierToString} from "@encointer/util";
 import {decodeByteArrayString} from "./helpers";
+import { getBusinesses } from "@encointer/node-api";
 
 
 let api: any;
@@ -61,13 +62,12 @@ function App() {
     const getBusinessesUrl = async (cid: CommunityIdentifier) => {
         await connect()
         try {
-            const businesses =
-                await api.rpc.encointer.bazaarGetBusinesses(cid);
+            const businesses = await getBusinesses(api, cid);
             console.log("businesses from rpc call:", JSON.stringify(businesses));
 
             let businessUrls: string[] = [];
             businessUrls = businesses.map((business: Business) =>
-                business.business_data.url.toString()
+                business.businessData.url.toString()
             );
 
             return businessUrls;
