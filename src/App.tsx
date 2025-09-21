@@ -1,7 +1,7 @@
 import {useEffect, useState} from "react";
 // import logo from './logo.svg';
 import "./App.css";
-import {ApiPromise, Keyring, WsProvider} from "@polkadot/api";
+import {ApiPromise, WsProvider} from "@polkadot/api";
 import {options} from "@encointer/node-api/options";
 import {
     Business,
@@ -16,7 +16,7 @@ import {OfferingComponent} from "./OfferingComponent";
 import {loadJsonFromIpfs} from "./ipfs";
 
 let api: any;
-let keyring: Keyring;
+// let keyring: Keyring;
 let chain: string;
 if (process.env['REACT_APP_MOCKING'] === "enabled") {
     console.log("Mocking enabled");
@@ -40,8 +40,7 @@ function App() {
 
 
     const connect = async () => {
-        // let api: ApiPromise;
-        keyring = new Keyring({type: "sr25519"});
+        // keyring = new Keyring({type: "sr25519"});
         const provider = new WsProvider(chain);
         try {
             // @ts-ignore
